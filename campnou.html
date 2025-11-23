@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Tiketon — Билеты и события Казахстана</title>
+<style>
+/* ====== Общие стили ====== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: "Segoe UI", sans-serif;
+  background: #0d0d0d;
+  color: #fff;
+  overflow-x: hidden;
+}
+header {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 50px;
+  z-index: 1000;
+  box-shadow: 0 0 15px rgba(255,0,85,0.3);
+}
+header h1 {
+  font-size: 28px;
+  letter-spacing: 1px;
+  color: #ff0055;
+}
+nav a {
+  color: #fff;
+  text-decoration: none;
+  margin: 0 15px;
+  transition: 0.3s;
+}
+nav a:hover {
+  color: #ff0055;
+  text-shadow: 0 0 10px #ff0055;
+}
+
+section {
+  min-height: 100vh;
+  padding: 100px 60px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+section.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+h2 {
+  font-size: 42px;
+  margin-bottom: 35px;
+  color: #ff0055;
+  text-shadow: 0 0 15px #ff0055;
+}
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 25px;
+  width: 100%;
+  max-width: 1100px;
+}
+.card {
+  background: rgba(255,255,255,0.05);
+  border-radius: 16px;
+  overflow: hidden;
+  text-align: center;
+  padding-bottom: 20px;
+  transition: transform 0.4s, box-shadow 0.4s;
+  animation: cardFade 1.2s ease forwards;
+  opacity: 0;
+}
+.card img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+}
+.card h3, .card p { padding: 10px 15px; }
+.card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 8px 30px rgba(255,0,85,0.5);
+}
+button {
+  background: #ff0055;
+  border: none;
+  padding: 10px 20px;
+  color: #fff;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s;
+}
+button:hover {
+  background: #ff3366;
+  box-shadow: 0 0 10px #ff3366;
+}
+
+/* ====== Главная (видео фон + анимация свечения) ====== */
+#home {
+  position: relative;
+  overflow: hidden;
+}
+#home video {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -3;
+  filter: brightness(70%) saturate(110%);
+  animation: videoPulse 8s ease-in-out infinite;
+}
+#home::after {
+  content: "";
+  position: absolute;
+  top:0; left:0;
+  width:100%; height:100%;
+  background: radial-gradient(circle at 50% 50%, rgba(255,0,85,0.15), rgba(0,0,0,0.7));
+  animation: glowPulse 6s infinite alternate;
+  z-index:-1;
+}
+
+/* ====== Анимированный фон для концертов ====== */
+#concerts {
+  background: linear-gradient(120deg, #1a1a1a, #2a002a);
+  position: relative;
+  overflow: hidden;
+}
+#concerts::before {
+  content: "";
+  position: absolute;
+  width: 300%;
+  height: 300%;
+  background: radial-gradient(circle, rgba(255,0,85,0.25) 0%, transparent 70%);
+  top: -100%;
+  left: -100%;
+  animation: moveLight 12s linear infinite;
+  z-index: -1;
+}
+
+/* ====== Остальные фоны ====== */
+#sports {
+  background: url('Билеты на спорт.gif') center/cover fixed;
+}
+#products {
+  background: url('ФОН 2.gif') center/cover fixed;
+}
+#about {
+  background: url('https://images.unsplash.com/photo-1529333166437-7750a6dd5a70?auto=format&fit=crop&w=1600&q=80') center/cover fixed;
+}
+#register {
+  background: url('https://images.unsplash.com/photo-1531297484001-80022131f5a1?auto=format&fit=crop&w=1600&q=80') center/cover fixed;
+}
+
+
+/* ====== Ключевые анимации ====== */
+@keyframes moveLight {
+  0% { transform: translate(0,0); }
+  50% { transform: translate(30%, 30%); }
+  100% { transform: translate(0,0); }
+}
+@keyframes glowPulse {
+  from { opacity: 0.4; }
+  to { opacity: 0.8; }
+}
+@keyframes videoPulse {
+  0%,100% { filter: brightness(70%) saturate(110%); }
+  50% { filter: brightness(85%) saturate(130%); }
+}
+@keyframes cardFade {
+  from { opacity: 0; transform: translateY(40px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ====== Стили панели корзины ====== */
+
+.cart-panel {
+  position: fixed;
+  right: 20px;
+  top: 90px;
+  width: 360px;
+  max-width: calc(100% - 40px);
+  background: rgba(10,10,10,0.95);
+  border-radius: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  z-index: 2000;
+  padding: 18px;
+  transform: translateX(420px);
+  transition: transform 0.35s ease;
+}
+#blackFridayTimer {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: rgba(255,0,85,0.2);
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: bold;
+  z-index: 2002;
+  color: #fff;
+  font-size: 16px;
+  text-align: center;
+}
+#blackFridayTimer span {
+  margin: 0 3px;
+}
+
+.cart-panel.open {
+  transform: translateX(0);
+}
+.cart-toggle {
+  position: fixed;
+  right: 20px;
+  top: 20px;
+  z-index: 2001;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+.cart-count {
+  background: #ff0055;
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  color: #fff;
+  font-size: 14px;
+}
+.cart-items { max-height: 420px; overflow:auto; margin-top: 10px; padding-right:6px; }
+.cart-item {
+  display:flex;
+  gap:10px;
+  align-items:center;
+  padding:8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+}
+.cart-item img { width:60px; height:44px; object-fit:cover; border-radius:6px; }
+.item-info { flex:1; font-size:14px; }
+.qty-controls { display:flex; gap:6px; align-items:center; margin-top:6px; }
+.qty-controls button { padding:6px 8px; font-size:14px; border-radius:6px; }
+.cart-footer { margin-top:12px; display:flex; justify-content:space-between; align-items:center; }
+.total { font-weight:bold; font-size:18px; color:#ff0055; }
+
+/* мобильные */
+@media (max-width:600px){
+  header { padding: 12px 20px; }
+  .card img { height:160px; }
+  .cart-panel { width: 92%; right: 4%; top: 72px; }
+}
+</style>
+</head>
+<body>
+<header>
+  <h1>Tiketon</h1>
+  <nav>
+    <a href="#home">Главная</a>
+    <a href="#concerts">Концерты</a>
+    <a href="#sports">Спорт</a>
+    <a href="#products">Продукты</a>
+    <a href="#about">О нас</a>
+    <a href="#register">Регистрация</a>
+  </nav>
+</header>
+
+<!-- Кнопка и панель корзины -->
+ <!-- Таймер Black Friday -->
+<div id="blackFridayTimer">
+  <span id="days">0</span>д
+  <span id="hours">0</span>ч
+  <span id="minutes">0</span>м
+  <span id="seconds">0</span>с
+</div>
+
+<div class="cart-toggle">
+  <button id="openCartBtn" title="Открыть корзину">Корзина</button>
+  <div class="cart-count" id="cartCount">0</div>
+</div>
+
+<div class="cart-panel" id="cartPanel" aria-hidden="true">
+  <h3>Ваша корзина</h3>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div>Итого: <span class="total" id="cartTotal">0 ₸</span></div>
+    <div>
+      <button id="clearCartBtn">Очистить</button>
+      <button id="checkoutBtn">Оформить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Главная -->
+<section id="home" class="active">
+  <video autoplay muted loop>
+    <source src="https://cdn.pixabay.com/vimeo/266042681/concert-14854.mp4?width=1280&hash=a8f83d8f2c75c3b731d6c6d8e08a4823f408da9b" type="video/mp4">
+  </video>
+  <h2>Tiketon</h2>
+  <p>Билеты на лучшие концерты и спортивные события Казахстана</p>
+  <div class="card-grid">
+    <div class="card" data-id="p1" data-title="Кайрат Нуртас — Большой концерт" data-price="7000"><img src="Кайрат Нуртас — Большой концерт.jpg"><h3>Кайрат Нуртас — Большой концерт</h3><p>15 октября, Алматы</p><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="p2" data-title="Димаш Кудайберген — Тур 2025" data-price="12000"><img src="Димаш Кудайберген — Тур 2025.gif"><h3>Димаш Кудайберген — Тур 2025</h3><p>20 ноября, Астана</p><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="p3" data-title="Футбольный матч Реал vs Барса" data-price="9000"><img src="Футбольный матч Реал vs Барса.gif"><h3>Футбольный матч Реал vs Барса</h3><p>25 октября, Астана</p><button class="add-to-cart">Добавить в корзину</button></div>
+  </div>
+</section>
+
+<!-- Концерты -->
+<section id="concerts">
+  <h2>Концерты</h2>
+  <div class="card-grid">
+    <div class="card" data-id="c1" data-title="Кайрат Нуртас — Большой концерт (концерты)" data-price="7000"><img src="Кайрат Нуртас — Большой концерт.jpg"><h3>Кайрат Нуртас — Большой концерт</h3><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="c2" data-title="Димаш Кудайберген — Тур 2025 (концерты)" data-price="12000"><img src="Димаш Кудайберген — Тур 2025.gif"><h3>Димаш Кудайберген — Тур 2025</h3><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="c3" data-title="Мировая звезда — Легенды сцены" data-price="20000"><img src="Мировая звезда Легенды сцены.gif"><h3>Мировая звезда — Легенды сцены</h3><p>5 декабря 2025, Алматы</p><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="c4" data-title="Фестиваль Джаза 2025" data-price="8000"><img src="Фестиваль Джаза 2025.gif"><h3>Фестиваль Джаза 2025</h3><p>12 декабря, Астана</p><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="c5" data-title="50 cent in da club" data-price="25000"><img src="50 cent in da club.gif"><h3>50 cent in da club</h3><p>20 декабря 2025, Алматы</p><button class="add-to-cart">Добавить в корзину</button></div>
+  </div>
+</section>
+
+<!-- Остальные разделы те же, как раньше -->
+<section id="sports">
+  <h2>Спорт</h2>
+  <div class="card-grid">
+    <div class="card" data-id="s1" data-title="Футбольный матч Реал vs Барса (спорт)" data-price="9000"><img src="Футбольный матч Реал vs Барса.gif"><h3>Футбольный матч Реал vs Барса</h3><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="s2" data-title="Баскетбол" data-price="5000"><img src="Баскетбол.gif"><h3>Баскетбол</h3><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="s3" data-title="Теннисный турнир 2025" data-price="6000"><img src="Теннисный турнир 2025.gif"><h3>Теннисный турнир 2025</h3><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="s4" data-title="Волейбол Чемпионат" data-price="4500"><img src="Волейбол Чемпионат.gif"><h3>Волейбол Чемпионат</h3><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="s5" data-title="Хоккей Лига Казахстана" data-price="5500"><img src="Хоккей Лига Казахстана.gif"><h3>Хоккей Лига Казахстана</h3><button class="add-to-cart">Добавить в корзину</button></div>
+  </div>
+</section>
+
+<section id="products">
+  <h2>Наши продукты</h2>
+  <div class="card-grid">
+    <div class="card" data-id="pr1" data-title="Билеты на концерты (продукты)" data-price="7000"><img src="Билеты на концерты.gif"><h3>Билеты на концерты</h3><p>Онлайн покупка, мобильные билеты, возврат от 2000 ₸</p><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="pr2" data-title="Билеты на спорт (продукты)" data-price="1500"><img src="Билеты на спорт.gif"><h3>Билеты на спорт</h3><p>Футбол, баскетбол, теннис. Безопасные платежи от 1500 ₸</p><button class="add-to-cart">Добавить в корзину</button></div>
+    <div class="card" data-id="pr3" data-title="Мерч и сувениры" data-price="3000"><img src="Мерч и сувениры.jpg"><h3>Мерч и сувениры</h3><p>Доставка, эксклюзивные коллекции от 1000 ₸</p><button class="add-to-cart">Добавить в корзину</button></div>
+  </div>
+</section>
+
+<section id="about">
+  <h2>О нас</h2>
+  <p style="max-width:700px; text-align:center;">
+    Добро пожаловать на <b>Tiketon</b> — ваш надежный сервис по покупке билетов на концерты, спортивные мероприятия и другие события по всему Казахстану.
+  </p>
+</section>
+
+<section id="register">
+  <h2>Регистрация</h2>
+  <form style="display:flex;flex-direction:column;gap:15px;max-width:400px;">
+    <input type="text" placeholder="Имя" style="padding:10px;border-radius:8px;border:none;">
+    <input type="email" placeholder="Email" style="padding:10px;border-radius:8px;border:none;">
+    <input type="password" placeholder="Пароль" style="padding:10px;border-radius:8px;border:none;">
+    <button>Зарегистрироваться</button>
+  </form>
+</section>
+
+<script>
+function startBlackFridayTimer() {
+  const endDate = new Date('2025-11-29T00:00:00'); // Дата Black Friday
+  const timerEl = {
+    days: document.getElementById('days'),
+    hours: document.getElementById('hours'),
+    minutes: document.getElementById('minutes'),
+    seconds: document.getElementById('seconds')
+  };
+
+  function updateTimer() {
+    const now = new Date();
+    let diff = endDate - now;
+    if(diff < 0) diff = 0;
+    const d = Math.floor(diff / (1000*60*60*24));
+    const h = Math.floor((diff / (1000*60*60)) % 24);
+    const m = Math.floor((diff / (1000*60)) % 60);
+    const s = Math.floor((diff / 1000) % 60);
+    timerEl.days.innerText = d;
+    timerEl.hours.innerText = h;
+    timerEl.minutes.innerText = m;
+    timerEl.seconds.innerText = s;
+  }
+  updateTimer();
+  setInterval(updateTimer, 1000);
+}
+startBlackFridayTimer();
+
+
+// Анимация появления секций при скролле
+const sections = document.querySelectorAll("section");
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) e.target.classList.add("active");
+  });
+},{threshold:0.2});
+sections.forEach(sec => observer.observe(sec));
+
+// Задержка появления карточек
+document.querySelectorAll(".card").forEach((card, i) => {
+  card.style.animationDelay = `${i * 0.12}s`;
+});
+
+/* =========================
+   ООП: Реализация корзины
+   ========================= */
+
+class Product {
+  constructor(id, title, price, img) {
+    this.id = id;
+    this.title = title;
+    this.price = Number(price);
+    this.img = img || '';
+  }
+}
+
+class CartItem {
+  constructor(product, qty = 1) {
+    this.product = product;
+    this.qty = qty;
+  }
+  get subtotal() {
+    return this.product.price * this.qty;
+  }
+}
+
+class Cart {
+  constructor() {
+    this.items = []; // массив CartItem
+    this.load();
+  }
+
+  add(product, qty = 1) {
+    const found = this.items.find(i => i.product.id === product.id);
+    if (found) {
+      found.qty += qty;
+    } else {
+      this.items.push(new CartItem(product, qty));
+    }
+    this.save();
+  }
+
+  remove(productId) {
+    this.items = this.items.filter(i => i.product.id !== productId);
+    this.save();
+  }
+
+  updateQty(productId, qty) {
+    const item = this.items.find(i => i.product.id === productId);
+    if (item) {
+      item.qty = Math.max(0, Number(qty));
+      if (item.qty === 0) this.remove(productId);
+      else this.save();
+    }
+  }
+
+  clear() {
+    this.items = [];
+    this.save();
+  }
+
+  getTotal() {
+    return this.items.reduce((s, i) => s + i.subtotal, 0);
+  }
+
+  save() {
+    try {
+      const serial = JSON.stringify(this.items.map(i => ({ id: i.product.id, title: i.product.title, price: i.product.price, img: i.product.img, qty: i.qty })));
+      localStorage.setItem('tiketon_cart', serial);
+      renderCart();
+    } catch (e) { console.error(e); }
+  }
+
+  load() {
+    try {
+      const raw = localStorage.getItem('tiketon_cart');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      this.items = parsed.map(p => new CartItem(new Product(p.id, p.title, p.price, p.img), p.qty));
+    } catch (e) { console.error(e); }
+  }
+}
+
+/* ========== Инициализация ========== */
+const cart = new Cart();
+
+/* Сбор продуктов из DOM (карточки) */
+function collectProductFromCard(card) {
+  const id = card.dataset.id || ('id_' + Math.random().toString(36).slice(2,9));
+  const title = card.dataset.title || (card.querySelector('h3') ? card.querySelector('h3').innerText.trim() : 'Товар');
+  const price = card.dataset.price ? Number(card.dataset.price) : (card.dataset['price'] ? Number(card.dataset['price']) : 1000);
+  const img = card.querySelector('img') ? card.querySelector('img').getAttribute('src') : '';
+  return new Product(id, title, price, img);
+}
+
+/* Обработчики кнопок "Добавить в корзину" */
+document.querySelectorAll('.add-to-cart').forEach(btn => {
+  btn.addEventListener('click', e => {
+    const card = e.target.closest('.card');
+    const product = collectProductFromCard(card);
+    cart.add(product, 1);
+    flashButton(e.target, 'Добавлено');
+    openCart();
+  });
+});
+
+function flashButton(btn, text = 'Добавлено') {
+  const old = btn.innerText;
+  btn.innerText = text;
+  btn.disabled = true;
+  setTimeout(()=>{ btn.innerText = old; btn.disabled = false; },900);
+}
+
+/* ========== Рендер корзины в панели ========== */
+const cartPanel = document.getElementById('cartPanel');
+const cartItemsEl = document.getElementById('cartItems');
+const cartCountEl = document.getElementById('cartCount');
+const cartTotalEl = document.getElementById('cartTotal');
+
+function renderCart() {
+  cartItemsEl.innerHTML = '';
+  if (cart.items.length === 0) {
+    cartItemsEl.innerHTML = '<p style="opacity:0.8">Корзина пуста</p>';
+    cartCountEl.innerText = '0';
+    cartTotalEl.innerText = '0 ₸';
+    return;
+  }
+  cart.items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'cart-item';
+    div.innerHTML = `
+      <img src="${item.product.img || ''}" alt="${escapeHtml(item.product.title)}" onerror="this.style.opacity='.5'">
+      <div class="item-info">
+        <div>${escapeHtml(item.product.title)}</div>
+        <div style="opacity:.8; font-size:13px;">Цена: ${formatPrice(item.product.price)} ₸</div>
+        <div class="qty-controls">
+          <button class="dec" data-id="${item.product.id}">−</button>
+          <div style="min-width:36px; text-align:center;">${item.qty}</div>
+          <button class="inc" data-id="${item.product.id}">+</button>
+          <button class="remove" data-id="${item.product.id}" style="margin-left:8px;">Удалить</button>
+        </div>
+      </div>
+      <div style="min-width:70px; text-align:right;">
+        <div style="font-weight:bold;">${formatPrice(item.subtotal)} ₸</div>
+      </div>
+    `;
+    cartItemsEl.appendChild(div);
+  });
+
+  // обновление счётчика и итога
+  const totalCount = cart.items.reduce((s,i)=>s+i.qty,0);
+  cartCountEl.innerText = totalCount;
+  cartTotalEl.innerText = `${formatPrice(cart.getTotal())} ₸`;
+
+  // вешаем обработчики (+ - удалить)
+  cartItemsEl.querySelectorAll('button.inc').forEach(b=>{
+    b.addEventListener('click', ()=> {
+      cart.updateQty(b.dataset.id, (getItemQty(b.dataset.id) + 1));
+    });
+  });
+  cartItemsEl.querySelectorAll('button.dec').forEach(b=>{
+    b.addEventListener('click', ()=> {
+      cart.updateQty(b.dataset.id, (getItemQty(b.dataset.id) - 1));
+    });
+  });
+  cartItemsEl.querySelectorAll('button.remove').forEach(b=>{
+    b.addEventListener('click', ()=> {
+      cart.remove(b.dataset.id);
+    });
+  });
+}
+
+function getItemQty(id) {
+  const it = cart.items.find(i=>i.product.id === id);
+  return it ? it.qty : 0;
+}
+
+/* Помощники */
+function formatPrice(n) {
+  return Number(n).toLocaleString('ru-RU');
+}
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, function(m){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]; });
+}
+
+/* Панель корзины: открыть / закрыть */
+const openCartBtn = document.getElementById('openCartBtn');
+openCartBtn.addEventListener('click', toggleCart);
+function openCart() {
+  cartPanel.classList.add('open');
+  cartPanel.setAttribute('aria-hidden','false');
+  renderCart();
+}
+function closeCart() {
+  cartPanel.classList.remove('open');
+  cartPanel.setAttribute('aria-hidden','true');
+}
+function toggleCart() {
+  cartPanel.classList.toggle('open');
+  const opened = cartPanel.classList.contains('open');
+  cartPanel.setAttribute('aria-hidden', opened ? 'false' : 'true');
+  if (opened) renderCart();
+}
+
+/* Кнопки очистки и оформления */
+document.getElementById('clearCartBtn').addEventListener('click', ()=> {
+  if (!confirm('Очистить корзину?')) return;
+  cart.clear();
+});
+document.getElementById('checkoutBtn').addEventListener('click', ()=> {
+  if (cart.items.length === 0) { alert('Корзина пуста'); return; }
+  // Здесь можно реализовать переход к оплате. Пока — простое подтверждение.
+  const total = formatPrice(cart.getTotal());
+  if (confirm(`Оформить заказ на сумму ${total} ₸?`)) {
+    // пример: очищаем корзину и показываем сообщение
+    cart.clear();
+    alert('Спасибо! Заказ оформлен (демо).');
+  }
+});
+
+/* Инициализация рендера при загрузке */
+document.addEventListener('DOMContentLoaded', ()=> {
+  renderCart();
+});
+
+</script>
+</body>
+</html>

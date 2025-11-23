@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Website</title>
+    <style>
+        /* --- Общий дизайн --- */
+        body {
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        /* --- Навигация --- */
+        .navbar {
+            background-color: #2c3e50;
+            padding: 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.3s;
+        }
+
+        .navbar a:hover {
+            color: #f39c12;
+        }
+
+        /* --- Главный блок --- */
+        .hero {
+            text-align: center;
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, #6c5ce7, #a29bfe);
+            color: white;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            margin-top: 1rem;
+            background-color: #f39c12;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .extra-info {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem;
+            background-color: rgba(255,255,255,0.8);
+            border-radius: 5px;
+            color: #333;
+        }
+
+        /* --- Карточки товаров --- */
+        .products {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .product-card {
+            display: inline-block;
+            width: 200px;
+            margin: 1rem;
+            background-color: white;
+            border-radius: 10px;
+            padding: 1rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .product-card:hover {
+            transform: translateY(-10px) scale(1.05);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+        }
+
+        .product-card img {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        /* --- Анимации --- */
+        .fade-in {
+            opacity: 0;
+            animation: fadeIn 1s forwards;
+        }
+
+        .delay-1 {
+            animation-delay: 0.5s;
+        }
+
+        .delay-2 {
+            animation-delay: 1s;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        .slide-up {
+            opacity: 0;
+            transform: translateY(30px);
+            animation: slideUp 1s forwards;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- Анимация при прокрутке --- */
+        .fade-in-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+        }
+
+        .fade-in-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* --- Раздел "О нас" --- */
+        .about {
+            padding: 4rem 2rem;
+            background-color: #dfe6e9;
+            text-align: center;
+            border-top: 2px solid #b2bec3;
+        }
+    </style>
+</head>
+<body>
+    <!-- Навигация -->
+    <nav class="navbar">
+        <ul>
+            <li><a href="#home">Главная</a></li>
+            <li><a href="#products">Товары</a></li>
+            <li><a href="#about">О нас</a></li>
+        </ul>
+    </nav>
+
+    <!-- Главный блок -->
+    <section id="home" class="hero">
+        <h1 class="fade-in">Добро пожаловать на наш сайт!</h1>
+        <p class="fade-in delay-1">Наслаждайтесь плавными анимациями и интерактивностью.</p>
+        <button class="btn" id="showMoreBtn">Показать больше</button>
+        <div class="extra-info" id="extraInfo">
+            <p>Вот дополнительная информация, которая появляется при клике.</p>
+        </div>
+    </section>
+
+    <!-- Карточки товаров -->
+    <section id="products" class="products">
+        <h2>Наши продукты</h2>
+        <div class="product-card slide-up">
+            <img src="https://via.placeholder.com/150" alt="Product 1">
+            <h3>Товар 1</h3>
+            <p>Описание товара 1</p>
+        </div>
+        <div class="product-card slide-up delay-1">
+            <img src="https://via.placeholder.com/150" alt="Product 2">
+            <h3>Товар 2</h3>
+            <p>Описание товара 2</p>
+        </div>
+        <div class="product-card slide-up delay-2">
+            <img src="https://via.placeholder.com/150" alt="Product 3">
+            <h3>Товар 3</h3>
+            <p>Описание товара 3</p>
+        </div>
+    </section>
+
+    <!-- О нас -->
+    <section id="about" class="about fade-in-scroll">
+        <h2>О нас</h2>
+        <p>Мы создаем современные и интерактивные веб-сайты с красивым дизайном.</p>
+    </section>
+
+    <script>
+        // --- Показать / скрыть дополнительную информацию ---
+        const showMoreBtn = document.getElementById('showMoreBtn');
+        const extraInfo = document.getElementById('extraInfo');
+
+        showMoreBtn.addEventListener('click', () => {
+            if (extraInfo.style.display === 'block') {
+                extraInfo.style.display = 'none';
+            } else {
+                extraInfo.style.display = 'block';
+            }
+        });
+
+        // --- Анимация при прокрутке ---
+        const faders = document.querySelectorAll('.fade-in-scroll');
+
+        const appearOptions = {
+            threshold: 0.2,
+            rootMargin: "0px 0px -50px 0px"
+        };
+
+        const appearOnScroll = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if(entry.isIntersecting){
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, appearOptions);
+
+        faders.forEach(fader => {
+            appearOnScroll.observe(fader);
+        });
+    </script>
+</body>
+</html>

@@ -1,65 +1,154 @@
-public class OrderItem
+/*public class Book
 {
-    public string ProductName { get; }
-    public decimal UnitPrice { get; }
-    public int Quantity { get; private set; }
+    public string Isbn { get; set; }
+    public string Title { get; set; }
+    public bool IsBorrowed { get; set; }
+}
 
-    public OrderItem(string productName, decimal unitPrice, int quantity)
+public class Member
+{
+    public string Name { get; set; }
+    public int MaxBooks { get; set; }
+    public int CurrentBorrowedCount { get; set; }
+}
+
+public class LibraryService
+{
+    public void BorrowBook(Book book, Member member)
     {
-        if (string.IsNullOrWhiteSpace(productName))
-            throw new ArgumentException("Название товара обязательно", nameof(productName));
-        if (unitPrice <= 0)
-            throw new ArgumentException("Цена должна быть > 0", nameof(unitPrice));
-        if (quantity <= 0)
-            throw new ArgumentException("Количество должно быть > 0", nameof(quantity));
+        if (book == null || member == null)
+        {
+            Console.WriteLine("Книга или читатель не указаны");
+            return;
+        }
 
-        ProductName = productName;
-        UnitPrice = unitPrice;
-        Quantity = quantity;
+        if (book.IsBorrowed)
+        {
+            Console.WriteLine($"Книга '{book.Title}' уже выдана");
+            return;
+        }
+
+        if (member.CurrentBorrowedCount >= member.MaxBooks)
+        {
+            Console.WriteLine($"Читатель {member.Name} достиг лимита книг");
+            return;
+        }
+
+        book.IsBorrowed = true;
+        member.CurrentBorrowedCount++;
+
+        Console.WriteLine($"Книга '{book.Title}' выдана читателю {member.Name}");
     }
 
-    public decimal GetTotal() => UnitPrice * Quantity;
-
-    public void ChangeQuantity(int newQuantity)
+    public void ReturnBook(Book book, Member member)
     {
-        if (newQuantity <= 0)
-            throw new ArgumentException("Количество должно быть > 0", nameof(newQuantity));
-        Quantity = newQuantity;
+        if (book == null || member == null)
+        {
+            Console.WriteLine("Книга или читатель не указаны");
+            return;
+        }
+
+        if (!book.IsBorrowed)
+        {
+            Console.WriteLine($"Книга '{book.Title}' и так в библиотеке");
+            return;
+        }
+
+        book.IsBorrowed = false;
+        member.CurrentBorrowedCount--;
+
+        Console.WriteLine($"Книга '{book.Title}' возвращена от {member.Name}");
     }
 }
 
-public class Order
+class Program
 {
-    private readonly List<OrderItem> _items = new List<OrderItem>();
-    public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
-
-    public decimal Discount { get; private set; }
-
-    public void AddItem(string productName, decimal unitPrice, int quantity)
+    static void Main()
     {
-        var item = new OrderItem(productName, unitPrice, quantity);
-        _items.Add(item);
-    }
+        var book = new Book { Isbn = "123", Title = "Clean Code", IsBorrowed = false };
+        var member = new Member { Name = "Alice", MaxBooks = 3, CurrentBorrowedCount = 0 };
 
-    public decimal GetTotalWithoutDiscount()
-    {
-        return _items.Sum(i => i.GetTotal());
-    }
+        var service = new LibraryService();
 
-    public decimal GetTotal()
-    {
-        return GetTotalWithoutDiscount() - Discount;
-    }
-
-    public void ApplyDiscount(decimal discount)
-    {
-        if (discount < 0)
-            throw new ArgumentException("Скидка не может быть отрицательной", nameof(discount));
-
-        var totalWithoutDiscount = GetTotalWithoutDiscount();
-        if (discount > totalWithoutDiscount)
-            throw new ArgumentException("Скидка не может быть больше суммы заказа", nameof(discount));
-
-        Discount = discount;
+        service.BorrowBook(book, member);
+        service.ReturnBook(book, member);
     }
 }
+*/
+
+public class Book
+{
+    public string Isbn { get; }
+    public string Title { get; }
+    public bool IsBorrowed { get; private set; }
+    public Book(string isbn, string title)
+    {
+        if (string.IsNullOrWhiteSpace(isbn))
+            throw new ArgumentException("ISBN обязателен", nameof(isbn));
+
+        if (string.IsNullOrWhiteSpace(title))
+            throw new ArgumentException("Название обязательно", nameof(title));
+
+        Isbn = isbn;
+        Title = title;
+    }
+    public void Borrow()
+    {
+        if (IsBorrowed)
+        {
+            throw new InvalidOperationException($"Книга '{Title}' уже выдана");
+        }
+        IsBorrowed = true;
+    }
+    public void Return()
+    {
+        if (!IsBorrowed)
+        {
+            throw new InvalidOperationException($"Книга '{Title}' и так в библиотеке");
+        }
+        IsBorrowed = false;
+    }
+}
+public class Member
+{
+    public string Name { get; set; }
+    public int MaxBooks { get; set; }
+    public int CurrentBorrowedCount { get; set; }
+    public Member(string name, int maxBooks)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Имя обязательно", nameof(name));
+        if (maxBooks <= 0)
+            throw new ArgumentException("Максимальное число книг должно быть > 0", nameof(maxBooks));
+
+        Name = name;
+        MaxBooks = maxBooks;
+        CurrentBorrowedCount = 0;
+    }
+    public void BorrowBook(Book book)
+    {
+        if (book == null)
+            throw new ArgumentNullException(nameof(book));
+
+        if (CurrentBorrowedCount >= MaxBooks)
+            throw new InvalidOperationException(
+                $"Читатель {Name} достиг лимита в {MaxBooks} книг");
+
+        // используем поведение книги
+        book.Borrow();
+        CurrentBorrowedCount++;
+    }
+
+    public void ReturnBook(Book book)
+    {
+        if (book == null)
+            throw new ArgumentNullException(nameof(book));
+
+        if (!book.IsBorrowed)
+            throw new InvalidOperationException($"Книга '{book.Title}' и так в библиотеке");
+
+        book.Return();
+        CurrentBorrowedCount--;
+    }
+}
+

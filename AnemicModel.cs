@@ -206,7 +206,56 @@ public class BankAccountService
 }*/
 public class BankAccount
 {
-    public string AccountNumber { get; set; }
-    public string OwnerName { get; set; }
-    public decimal Balance { get; set; }
+    public string AccountNumber { get; }
+    public string OwnerName { get; }
+    public decimal Balance { get; private set; }
+
+    public BankAccount(string accountNumber, string ownerName, decimal balance)
+    {
+        if (string.IsNullOrWhiteSpace(accountNumber))
+            throw new ArgumentException("Номер счёта обязателен", nameof(accountNumber));
+
+        if (string.IsNullOrWhiteSpace(ownerName))
+            throw new ArgumentException("Имя владельца обязательно", nameof(ownerName));
+
+        if (balance < 0)
+            throw new ArgumentException("Начальный баланс не может быть отрицательным", nameof(balance));
+
+        AccountNumber = accountNumber;
+        OwnerName = ownerName;
+        Balance = balance;
+    }
+
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Сумма пополнения должна быть > 0", nameof(amount));
+
+        Balance += amount;
+    }
+
+    public void Withdraw(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Сумма снятия должна быть > 0", nameof(amount));
+
+        if (amount > Balance)
+            throw new InvalidOperationException("Недостаточно средств на счёте");
+
+        Balance -= amount;
+    }
+
+    public void TransferTo(BankAccount target, decimal amount)
+    {
+        if (target is null)
+            throw new ArgumentNullException(nameof(target));
+
+        if (ReferenceEquals(this, target))
+            throw new InvalidOperationException("Нельзя переводить на тот же самый счёт");
+
+        // Используем уже существующую логику
+        Withdraw(amount);
+        target.Deposit(amount);
+    }
 }
+

@@ -210,3 +210,142 @@ public class BankAccount
     public string OwnerName { get; set; }
     public decimal Balance { get; set; }
 }
+/*public class User
+{
+    public string Email { get; set; }
+    public bool IsActive { get; set; }
+}
+
+public class UserService
+{
+    public void Deactivate(User user)
+    {
+        user.IsActive = false;
+        Console.WriteLine($"User {user.Email} deactivated");
+    }
+}*/
+public class User
+{
+    public string Email { get; private set; }
+    public bool IsActive { get; private set; } = true;
+
+    public User(string email)
+    {
+        Email = email ?? throw new ArgumentNullException(nameof(email));
+    }
+
+    public void Deactivate()
+    {
+        if (!IsActive)
+            throw new InvalidOperationException("User already inactive");
+
+        IsActive = false;
+    }
+}
+
+public class UserService
+{
+    public void DeactivateUser(User user)
+    {
+        user.Deactivate();
+        Console.WriteLine($"User {user.Email} deactivated");
+    }
+}
+/*public class BankAccount
+{
+    public string Number { get; set; }
+    public decimal Balance { get; set; }
+}
+
+public class BankService
+{
+    public void Withdraw(BankAccount account, decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Amount must be positive");
+
+        if (account.Balance < amount)
+            throw new InvalidOperationException("Not enough money");
+
+        account.Balance -= amount;
+    }
+}*/
+public class BankAccount
+{
+    public string Number { get; private set; }
+    public decimal Balance { get; private set; }
+    public BankAccount(string number, decimal balance)
+    {
+        Number = number ?? throw new ArgumentNullException(nameof(number));
+        if (balance < 0)
+            throw new ArgumentException("Initial balance cannot be negative");
+
+        Balance = balance;
+    }
+    public void Withdraw(decimal amount)
+    {
+        if (amount < 0)
+        {
+            throw new ArgumentException("Amount must be positive");
+        }
+        if (amount > Balance)
+        {
+            throw new InvalidOperationException("Not enough money");
+        }
+        Balance -= amount;
+    }
+}
+public class BankService
+{
+    public void Withdraw(BankAccount account, decimal amount)
+    {
+        account.Withdraw(amount);
+    }
+}
+
+/*public class Product
+{
+    public string Name { get; set; }
+    public decimal BasePrice { get; set; }
+    public decimal DiscountPercent { get; set; }
+}
+
+public class PriceCalculator
+{
+    public decimal CalculateFinalPrice(Product product)
+    {
+        var discount = product.BasePrice * product.DiscountPercent / 100m;
+        return product.BasePrice - discount;
+    }
+}*/
+
+public class Product
+{
+    public string Name { get; private set; }
+    public decimal BasePrice { get; private set; }
+    public decimal DiscountPercent { get; private set; }
+    public Product(string name, decimal basePrice, decimal discountPercent)
+    {
+        Name = name ?? throw new ArgumentNullException(nameof(name));
+        if (basePrice < 0)
+            throw new ArgumentException("BasePrice cannot be negative");
+        if (discountPercent < 0 || discountPercent > 100)
+            throw new ArgumentException("Discount must be between 0 and 100");
+        BasePrice = basePrice;
+        DiscountPercent = discountPercent;
+    }
+    public decimal CalculateFinalPrice()
+    {
+        var discount = BasePrice * DiscountPercent / 100m;
+        return BasePrice - discount;
+    }
+}
+public class PriceCalculator
+{
+    public decimal CalculateFinalPrice(Product product)
+    {
+        product.CalculateFinalPrice();
+    }
+}
+
+

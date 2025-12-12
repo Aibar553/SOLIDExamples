@@ -126,3 +126,31 @@ public class Eagle : IEatable, IWalkable, IFlyable
     public void Walk() => Console.WriteLine("Eagle walks");
     public void Fly() => Console.WriteLine("Eagle flies");
 }
+
+/*public interface IMultiFunctionDevice
+{
+    void Print(string content);
+    void Scan(string destination);
+    void Fax(string number);
+    void Copy(string sourceTray, string destinationTray);
+}*/
+
+public interface IPrintable
+{
+    void Print(string content);
+}
+public interface IScanable
+{
+    void Scan(string destination);
+}
+
+public interface IFaxable
+{
+    void Fax(string number);
+}
+
+public interface ICopyable
+{
+    void Copy(string sourceTray, string destinationTray);
+}
+

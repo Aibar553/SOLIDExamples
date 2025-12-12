@@ -237,3 +237,49 @@ public class BankAccount
         return true;
     }
 }
+
+/*public class Rectangle
+{
+    public double Width { get; set; }
+    public double Height { get; set; }
+}
+
+public class GeometryUtils
+{
+    public double GetArea(Rectangle r)
+    {
+        return r.Width * r.Height;
+    }
+
+    public double GetPerimeter(Rectangle r)
+    {
+        return 2 * (r.Width + r.Height);
+    }
+}
+*/
+
+public class Rectangle
+{
+    public double Width { get; set; }
+    public double Height { get; set; }
+
+    public double GetArea()
+    {
+        return Width * Height;
+    }
+    public double GetPerimeter()
+    {
+        return 2 * (Width + Height);
+    }
+}
+public class GeometryUtils
+{
+    public double GetArea(Rectangle r)
+    {
+        r.GetArea();
+    }
+    public double GetPerimeter(Rectangle r)
+    {
+        r.GetPerimeter();
+    }
+}

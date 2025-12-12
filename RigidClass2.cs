@@ -110,3 +110,64 @@ class Program
         gold.CalculateDiscount(10000m);     // 1000
     }
 }
+/*
+ public class ReportGenerator
+{
+    public string Generate(int year, int month, bool asHtml, bool includeHeader, bool includeFooter)
+    {
+        string result = "";
+
+        if (includeHeader)
+        {
+            result += $"Report for {month}/{year}\n";
+        }
+
+        // имитация данных
+        result += "Data line 1\n";
+        result += "Data line 2\n";
+
+        if (includeFooter)
+        {
+            result += "\n--- END ---\n";
+        }
+
+        if (asHtml)
+        {
+            result = "<html><body><pre>" + result + "</pre></body></html>";
+        }
+
+        return result;
+    }
+}
+*/
+
+public interface IReportMethod
+{
+    string Generate(int year, int month);
+}
+
+public class Header : IReportMethod
+{
+    public string Generate(int year, int month)
+    {
+        return $"Report for {month}/{year}\n";
+    }
+}
+
+public class Footer : IReportMethod
+{
+    public string Generate(int year, int month)
+    {
+        return "\n--- END ---\n";
+    }
+}
+
+public class Html : IReportMethod
+{
+    public string Generate(int year, int month)
+    {
+        // в таком виде Html не знает контент, он просто делает "пустой" html
+        var result = $"Report for {month}/{year}\n";  // условный контент
+        return "<html><body><pre>" + result + "</pre></body></html>";
+    }
+}

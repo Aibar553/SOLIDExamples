@@ -1,226 +1,195 @@
-/* class Order
+/*public class WeatherService
 {
-    public int Id { get; set; }
-    public string CustomerEmail { get; set; }
-    public decimal Amount { get; set; }
-}
-
-// Конкретный репозиторий для SQL-базы
-public class SqlOrderRepository
-{
-    public void Save(Order order)
+    public string Get()
     {
-        Console.WriteLine("[SQL] Сохраняем заказ в базу...");
-        // Логика сохранения в БД
-    }
-}
-
-// Конкретный сервис email-уведомлений
-public class EmailNotificationService
-{
-    public void SendEmail(string to, string text)
-    {
-        Console.WriteLine($"[Email] To: {to}");
-        Console.WriteLine("Открываем SMTP-соединение...");
-        Console.WriteLine("Отправляем письмо: " + text);
-    }
-}
-
-// Сервис оформления заказа (жёстко завязан на конкретные классы)
-public class OrderService
-{
-    private readonly SqlOrderRepository _repository = new SqlOrderRepository();
-    private readonly EmailNotificationService _emailService = new EmailNotificationService();
-
-    public void PlaceOrder(Order order)
-    {
-        Console.WriteLine("Оформляем заказ...");
-
-        // Сохранить заказ
-        _repository.Save(order);
-
-        // Отправить уведомление
-        _emailService.SendEmail(order.CustomerEmail,
-            $"Ваш заказ №{order.Id} на сумму {order.Amount} оформлен");
-
-        Console.WriteLine("Заказ оформлен.\n");
-    }
-}
-
-class Program
-{
-    static void Main()
-    {
-        var order = new Order
-        {
-            Id = 1,
-            CustomerEmail = "user@example.com",
-            Amount = 1500m
-        };
-
-        var service = new OrderService();
-        service.PlaceOrder(order);
+        var client = new HttpClient();
+        return client.GetStringAsync("https://api").Result;
     }
 }*/
-public interface IOrderRepository
+public interface IHttpClient
 {
-    void Save(Order order);
-}
-public interface INotificationService
-{
-    void Notify(string to, string message);
-}
-public class SqlOrderRepository : IOrderRepository
-{
-    public void Save(Order order)
-    {
-        Console.WriteLine("[SQL] Сохраняем заказ в базу...");
-    }
-}
-
-public class EmailNotificationService : INotificationService
-{
-    public void Notify(string to, string message)
-    {
-        Console.WriteLine($"[Email] To: {to}");
-        Console.WriteLine("Открываем SMTP-соединение...");
-        Console.WriteLine("Отправляем письмо: " + message);
-    }
-}
-
-// Допустим, позже ты добавишь:
-public class SmsNotificationService : INotificationService
-{
-    public void Notify(string to, string message)
-    {
-        Console.WriteLine($"[SMS] To: {to}");
-        Console.WriteLine("Подключаемся к SMS-шлюзу...");
-        Console.WriteLine("Отправляем SMS: " + message);
-    }
-}
-public class OrderService
-{
-    private readonly IOrderRepository _repository;
-    private readonly INotificationService _notificationService;
-
-    public OrderService(IOrderRepository repository, INotificationService notificationService)
-    {
-        _repository = repository;
-        _notificationService = notificationService;
-    }
-
-    public void PlaceOrder(Order order)
-    {
-        Console.WriteLine("Оформляем заказ...");
-
-        _repository.Save(order);
-
-        _notificationService.Notify(
-            order.CustomerEmail,
-            $"Ваш заказ №{order.Id} на сумму {order.Amount} оформлен");
-
-        Console.WriteLine("Заказ оформлен.\n");
-    }
+    Task<string> Get(string url);
 }
 
 
-/*public class ConsoleLogger
+/*public class PaymentProcessor
 {
-    public void LogInfo(string message)
+    public void Pay()
     {
-        Console.WriteLine("[INFO] " + message);
+        var bank = new KazBankApi();  // конкретная реализация
+        bank.SendPayment();
     }
+}*/
 
-    public void LogError(string message)
-    {
-        Console.WriteLine("[ERROR] " + message);
-    }
+public interface IBank
+{
+    void SendPayment();
+}
+public class PaymentProcessor
+{
+    private readonly IBankApi _bank;
+    public PaymentProcessor(IBankApi bank) => _bank = bank;
 }
 
-public class ReportService
+/*public class ReportService
 {
-    private readonly ConsoleLogger _logger = new ConsoleLogger();
-
-    public void GenerateDailyReport()
+    public string BuildReport(List<string> data)
     {
-        _logger.LogInfo("Начали генерацию ежедневного отчёта");
-
-        // Какая-то логика генерации
-        Console.WriteLine("Генерируем отчёт за день...");
-
-        _logger.LogInfo("Ежедневный отчёт успешно сгенерирован");
+        return string.Join(",", data); // всегда CSV
     }
+}*/
 
-    public void GenerateMonthlyReport()
-    {
-        _logger.LogInfo("Начали генерацию месячного отчёта");
-
-        // Какая-то логика генерации
-        Console.WriteLine("Генерируем отчёт за месяц...");
-
-        _logger.LogInfo("Месячный отчёт успешно сгенерирован");
-    }
+public interface IBuilder
+{
+    string Format(List<string> data);
 }
-
-class Program
+/*
+ public class WeatherService
 {
-    static void Main()
+    public async Task<decimal> GetTempCAsync(string city)
     {
-        var service = new ReportService();
-        service.GenerateDailyReport();
-        service.GenerateMonthlyReport();
+        using var client = new HttpClient();
+        var json = await client.GetStringAsync($"https://api.weather/?q={city}");
+        var parts = json.Split(':', ',', '}'); // "быстрый парсинг"
+        var i = Array.IndexOf(parts, "\"tempC\"");
+        return decimal.Parse(parts[i + 1], CultureInfo.InvariantCulture);
     }
 }
 */
 
+public interface IHttp
+{
+    Task<string> GetAsync(string url);
+}
+
+public interface IWeatherParser
+{
+    decimal ParseTempC(string json);
+}
+
+public class WeatherService
+{
+    private readonly IHttp _http;
+    private readonly IWeatherParser _parser;
+
+    public WeatherService(IHttp http, IWeatherParser parser)
+        => (_http, _parser) = (http, parser);
+
+    public async Task<decimal> GetTempCAsync(string city)
+    {
+        var json = await _http.GetAsync($"https://api.weather/?q={city}");
+        return _parser.ParseTempC(json);
+    }
+}
+/*public class CheckoutService
+{
+    public void Checkout(Order order)
+    {
+        using var conn = new SqlConnection("...");
+        conn.Open();
+        using var tx = conn.BeginTransaction();
+
+        try
+        {
+            new SqlCommand("INSERT ...", conn, tx).ExecuteNonQuery();
+            new SqlCommand("UPDATE ...", conn, tx).ExecuteNonQuery();
+
+            File.AppendAllText("log.txt", $"Order {order.Id} committed\n");
+            tx.Commit();
+        }
+        catch (Exception ex)
+        {
+            File.AppendAllText("log.txt", $"Order {order.Id} failed: {ex.Message}\n");
+            tx.Rollback();
+            throw;
+        }
+    }
+}
+*/
+
+public interface IUnitOfWork : IDisposable
+{
+    void Commit();
+    void Rollback();
+}
+
+public interface IOrderRepository
+{
+    void Add(Order order);
+    void UpdateTotals(Order order);
+}
 
 public interface ILogger
 {
-    void LogInfo(string message);
-    void LogError(string message);
+    void Info(string msg);
+    void Error(string msg);
 }
 
-// Консольный логгер (реализация интерфейса)
-public class ConsoleLogger : ILogger
+public class CheckoutService
 {
-    public void LogInfo(string message)
-    {
-        Console.WriteLine("[INFO] " + message);
-    }
+    private readonly IUnitOfWork _uow;
+    private readonly IOrderRepository _orders;
+    private readonly ILogger _log;
 
-    public void LogError(string message)
+    public CheckoutService(IUnitOfWork uow, IOrderRepository orders, ILogger log)
+        => (_uow, _orders, _log) = (uow, orders, log);
+
+    public void Checkout(Order order)
     {
-        Console.WriteLine("[ERROR] " + message);
+        try
+        {
+            _orders.Add(order);
+            _orders.UpdateTotals(order);
+            _log.Info($"Order {order.Id} committed");
+            _uow.Commit();
+        }
+        catch (Exception ex)
+        {
+            _log.Error($"Order {order.Id} failed: {ex.Message}");
+            _uow.Rollback();
+            throw;
+        }
     }
 }
-
-public class ReportService
+/*public class SalesReportService
 {
-    private readonly ILogger _logger;
-
-    // Принимаем абстракцию, а не конкретный класс
-    public ReportService(ILogger logger)
+    public async Task SendDailyAsync(DateTime day, string email)
     {
-        _logger = logger;
+        var data = LoadFromDb(day); // приватный метод внутри
+        var csv = string.Join('\n', data.Select(x => $"{x.Id};{x.Total}"));
+
+        using var smtp = new SmtpClient("smtp.local");
+        await smtp.SendMailAsync("noreply@corp", email, "Daily Report", csv);
     }
 
-    public void GenerateDailyReport()
+    private IEnumerable<(int Id, decimal Total)> LoadFromDb(DateTime day) { ... }
+}*/
+
+public interface ISalesDataSource
+{
+    IEnumerable<(int Id, decimal Total)> Load(DateTime day);
+}
+public interface IReportFormatter
+{
+    string Format(IEnumerable<(int Id, decimal Total)> rows);
+}
+public interface IReportSender
+{
+    Task SendAsync(string subject, string body, string recipient);
+}
+public class SalesReportService
+{
+    private readonly ISalesDataSource _source;
+    private readonly IReportFormatter _formatter;
+    private readonly IReportSender _sender;
+
+    public SalesReportService(ISalesDataSource s, IReportFormatter f, IReportSender sd)
+        => (_source, _formatter, _sender) = (s, f, sd);
+
+    public async Task SendDailyAsync(DateTime day, string email)
     {
-        _logger.LogInfo("Начали генерацию ежедневного отчёта");
-
-        // Какая-то логика генерации
-        Console.WriteLine("Генерируем отчёт за день...");
-
-        _logger.LogInfo("Ежедневный отчёт успешно сгенерирован");
-    }
-
-    public void GenerateMonthlyReport()
-    {
-        _logger.LogInfo("Начали генерацию месячного отчёта");
-
-        // Какая-то логика генерации
-        Console.WriteLine("Генерируем отчёт за месяц...");
-
-        _logger.LogInfo("Месячный отчёт успешно сгенерирован");
+        var rows = _source.Load(day);
+        var body = _formatter.Format(rows);
+        await _sender.SendAsync("Daily Report", body, email);
     }
 }

@@ -153,3 +153,81 @@ public class ExportService
         return $"Invoice: {inv.AmountUsd} USD ({amountKzt} KZT)";
     }
 }
+
+
+/*public class OrderService
+{
+    public decimal CalculateTotal(decimal amount)
+    {
+        var tax = amount * 0.12m;   // ÍÄÑ 12%
+        return amount + tax;
+    }
+}
+
+public class InvoiceService
+{
+    public decimal CalculateInvoiceTotal(decimal amount)
+    {
+        var tax = amount * 0.12m;   // ÍÄÑ 12%
+        return amount + tax;
+    }
+}
+
+public class ReportingService
+{
+    public decimal CalculateTax(decimal amount)
+    {
+        return amount * 0.12m;      // ÍÄÑ 12%
+    }
+}*/
+
+public interface ITaxService
+{
+    decimal CalculateTax(decimal amount);
+}
+public class TaxService : ITaxService
+{
+    private const decimal TaxRate = 0.12m;
+    public decimal CalculateTax(decimal amount)
+    {
+        return TaxRate * amount;
+    }
+}
+public class OrderService
+{
+    private readonly ITaxService _taxService;
+    public OrderService(ITaxService taxService)
+    {
+        _taxService = taxService;
+    }
+    public decimal CalculateTax(decimal amount) 
+    {
+        var tax = _taxService.CalculateTax(amount);
+        return tax + amount;
+    }
+}
+public class InvoiceService
+{
+    private readonly ITaxService _taxService;
+    public InvoiceService(ITaxService taxService)
+    {
+        _taxService = taxService;
+    }
+    public decimal CalculateInvoiceTotal(decimal amount)
+    {
+        var tax = _taxService.CalculateTax(amount);
+        return amount + tax;
+    }
+}
+public class ReportingService
+{
+    private readonly ITaxService _taxService;
+    public ReportingService(ITaxService taxService)
+    {
+        _taxService = taxService;
+    }
+    public decimal CalculateTax(decimal amount)
+    {
+        return _taxService.CalculateTax(amount);
+    }
+}

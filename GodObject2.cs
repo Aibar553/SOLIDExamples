@@ -229,3 +229,72 @@ class LibraryPrinter
         }
     }
 }
+
+
+
+/*public class OrderManager
+{
+    public decimal LastOrderTotal { get; private set; }
+
+    public void CreateOrder(List<decimal> itemPrices, string customerEmail)
+    {
+        if (itemPrices == null || itemPrices.Count == 0)
+            throw new ArgumentException("No items");
+
+        var total = itemPrices.Sum();
+        LastOrderTotal = total;
+
+        // save to file "instead of DB"
+        File.AppendAllText("orders.txt", $"Order: {total}\n");
+
+        // send confirmation email (pseudo)
+        Console.WriteLine($"Sending email to {customerEmail} with total {total}");
+
+        // log
+        Console.WriteLine("Order created");
+    }
+}*/
+
+public class Price
+{
+    public decimal CalculateTotal(List<decimal> itemPrices)
+    {
+        if (itemPrices == null || itemPrices.Count == 0)
+            throw new ArgumentException("No items");
+
+        return itemPrices.Sum();
+    }
+}
+public class OrderManager
+{
+    private readonly Price _price;
+
+    public decimal LastOrderTotal { get; private set; }
+
+    public OrderManager(Price price)
+    {
+        _price = price;
+    }
+
+    public void CreateOrder(List<decimal> itemPrices)
+    {
+        var total = _price.CalculateTotal(itemPrices);
+        LastOrderTotal = total;
+    }
+}
+public class Email
+{
+    public string UserName { get; }
+
+    public Email(string userName)
+    {
+        UserName = userName ?? throw new ArgumentNullException(nameof(userName));
+    }
+
+    public void SendEmail(decimal total)
+    {
+        Console.WriteLine($"Sending email to {UserName} with total {total}");
+    }
+}
+
+

@@ -1,253 +1,220 @@
-/*public class TxtFileExporter
+/*public class UserService
 {
-    public void Export(string fileName, string content)
+    public void Register(string email)
     {
-        Console.WriteLine($"[TXT EXPORT] Сохраняем отчёт в файл {fileName}.txt");
-        // Тут могла бы быть реальная запись в файл:
-        // File.WriteAllText(fileName + ".txt", content);
-        Console.WriteLine("Содержимое:");
-        Console.WriteLine(content);
+        // какая-то логика регистрации...
+
+        var smtp = new SmtpClient("smtp.server.com");
+        smtp.Send("no-reply@site.com", email, "Welcome", "Thanks for registering!");
+    }
+}*/
+public interface IEmailSender
+{
+    void SendWelcome(string email);
+}
+public class SmtpEmailSender : IEmailSender
+{
+    private readonly string _host;
+    public SmtpEmailSender(string host)
+    {
+        _host = host;
+    }
+    public void SendWelcome(string email)
+    {
+        using var smtp = new SmtpClient(_host);
+        smtp.Send("no-reply@site.com", email, "Welcome", "Thanks!");
     }
 }
-
-public class ReportExporter
+public class UserService
 {
-    private readonly TxtFileExporter _txtExporter = new TxtFileExporter();
+    private readonly IEmailSender _emailSender;
 
-    public void ExportDailyReport()
+    public UserService(IEmailSender emailSender)
     {
-        string fileName = "daily_report";
-        string content = "Отчёт за день: ...";
-
-        Console.WriteLine("Готовим ежедневный отчёт к экспорту...");
-
-        _txtExporter.Export(fileName, content);
-
-        Console.WriteLine("Ежедневный отчёт экспортирован.\n");
+        _emailSender = emailSender;
     }
 
-    public void ExportMonthlyReport()
+    public void Register(string email)
     {
-        string fileName = "monthly_report";
-        string content = "Отчёт за месяц: ...";
+        // логика регистрации...
 
-        Console.WriteLine("Готовим месячный отчёт к экспорту...");
-
-        _txtExporter.Export(fileName, content);
-
-        Console.WriteLine("Месячный отчёт экспортирован.\n");
+        _emailSender.SendWelcome(email);
     }
 }
-
-class Program
+/*public class OrdersController : ControllerBase
 {
-    static void Main()
+    [HttpGet("{id}")]
+    public IActionResult Get(int id)
     {
-        var exporter = new ReportExporter();
-        exporter.ExportDailyReport();
-        exporter.ExportMonthlyReport();
-    }
-}
-*/
-public interface IFileExporter
-{
-    void Export(string fileName, string content);
-}
+        using var conn = new SqlConnection("Server=.;Database=App;Trusted_Connection=True;");
+        conn.Open();
 
-public class TxtFileExporter : IFileExporter
-{
-    public void Export(string fileName, string content)
-    {
-        Console.WriteLine($"[TXT EXPORT] Сохраняем отчёт в файл {fileName}.txt");
-        Console.WriteLine("Содержимое:");
-        Console.WriteLine(content);
-    }
-}
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Total FROM Orders WHERE Id = @id";
+        cmd.Parameters.AddWithValue("@id", id);
 
-public class CsvFileExporter : IFileExporter
-{
-    public void Export(string fileName, string content)
-    {
-        Console.WriteLine($"[CSV EXPORT] Сохраняем отчёт в файл {fileName}.csv");
-        Console.WriteLine("Содержимое (в формате CSV):");
-        Console.WriteLine(content);
-    }
-}
+        var total = (decimal)cmd.ExecuteScalar();
 
-public class ReportExporter
-{
-    private readonly IFileExporter _fileExporter;
-
-    public ReportExporter(IFileExporter fileExporter)
-    {
-        _fileExporter = fileExporter;
-    }
-
-    public void ExportDailyReport()
-    {
-        string fileName = "daily_report";
-        string content = "Отчёт за день: ...";
-
-        Console.WriteLine("Готовим ежедневный отчёт к экспорту...");
-
-        _fileExporter.Export(fileName, content);
-
-        Console.WriteLine("Ежедневный отчёт экспортирован.\n");
-    }
-
-    public void ExportMonthlyReport()
-    {
-        string fileName = "monthly_report";
-        string content = "Отчёт за месяц: ...";
-
-        Console.WriteLine("Готовим месячный отчёт к экспорту...");
-
-        _fileExporter.Export(fileName, content);
-
-        Console.WriteLine("Месячный отчёт экспортирован.\n");
-    }
-}
-
-class Program
-{
-    static void Main()
-    {
-        // Экспорт в TXT
-        IFileExporter txtExporter = new TxtFileExporter();
-        var txtReportExporter = new ReportExporter(txtExporter);
-        txtReportExporter.ExportDailyReport();
-
-        // Экспорт в CSV
-        IFileExporter csvExporter = new CsvFileExporter();
-        var csvReportExporter = new ReportExporter(csvExporter);
-        csvReportExporter.ExportMonthlyReport();
-    }
-}
-
-/*public class Order
-{
-    public decimal Amount { get; set; }
-}
-
-public class HolidayDiscountCalculator
-{
-    public decimal CalculateDiscount(decimal amount)
-    {
-        // Новогодняя скидка 10%
-        return amount * 0.10m;
-    }
-}
-
-public class CheckoutService
-{
-    private readonly HolidayDiscountCalculator _discountCalculator = new HolidayDiscountCalculator();
-
-    public void ProcessOrder(Order order)
-    {
-        Console.WriteLine($"Оформляем заказ. Сумма без скидки: {order.Amount}");
-
-        decimal discount = _discountCalculator.CalculateDiscount(order.Amount);
-        decimal finalAmount = order.Amount - discount;
-
-        Console.WriteLine($"Скидка: {discount}");
-        Console.WriteLine($"Итоговая сумма к оплате: {finalAmount}\n");
-    }
-}
-
-class Program
-{
-    static void Main()
-    {
-        var order = new Order { Amount = 1000m };
-
-        var checkout = new CheckoutService();
-        checkout.ProcessOrder(order);
+        return Ok(total);
     }
 }
 */
-public class Order
-{
-    public decimal Amount { get; set; }
-}
 
-public interface IDiscountCalculator
+public interface IOrderRepository
 {
-    decimal CalculateDiscount(decimal amount);
+    decimal GetTotal(int id);
 }
-
-public class HolidayDiscountCalculator : IDiscountCalculator
+public class SqlOrderRepository : IOrderRepository
 {
-    public decimal CalculateDiscount(decimal amount)
+    private readonly string _connectionString;
+    public SqlOrderRepository(string connectionString)
     {
-        return amount * 0.10m; // 10%
+        _connectionString = connectionString;
+    }
+    public decimal GetTotal(int id) 
+    {
+        using var conn = new SqlConnection(_connectionString);
+        conn.Open();
+
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT Total FROM Orders WHERE Id = @id";
+        cmd.Parameters.AddWithValue("@id", id);
+        return (decimal)cmd.ExecuteScalar();
+    }
+}
+public class OrdersController : ControllerBase
+{
+    private readonly IOrderRepository _orderRepository;
+    public OrdersController(IOrderRepository orderRepository)
+    {
+        _orderRepository = orderRepository;
+    }
+    [HttpGet("{id}")]
+    public IActionResult Get(int id)
+    {
+        var total = _orders.GetTotal(id);
+        return Ok(total);
+    }
+}
+/*public class PaymentService
+{
+    private readonly FileLogger _logger = new FileLogger("payments.log");
+
+    public void Pay(decimal amount)
+    {
+        // логика оплаты...
+
+        _logger.Log($"Paid {amount}");
     }
 }
 
-public class StudentDiscountCalculator : IDiscountCalculator
+public class FileLogger
 {
-    public decimal CalculateDiscount(decimal amount)
+    private readonly string _path;
+
+    public FileLogger(string path)
     {
-        return amount * 0.15m; // 15%
+        _path = path;
+    }
+
+    public void Log(string message)
+    {
+        File.AppendAllText(_path, message + Environment.NewLine);
+    }
+}*/
+public interface ILogger
+{
+    void Log(string message);
+}
+public class FileLogger : ILogger
+{
+    private readonly string _path;
+    public FileLogger(string path)
+    {
+        _path = path;
+    }
+    public void Log(string message) 
+    {
+        File.AppendAllText(_path, message + Environment.NewLine);
     }
 }
-
-public class VipDiscountCalculator : IDiscountCalculator
+public class PaymentService
 {
-    public decimal CalculateDiscount(decimal amount)
+    private readonly ILogger _logger;
+    public PaymentService(ILogger logger)
     {
-        return amount * 0.20m; // 20%
+        _logger = logger;
+    }
+    public void Pay(decimal amount)
+    {
+        _logger.Log($"Paid {amount}");
     }
 }
-
-public class NoDiscountCalculator : IDiscountCalculator
+/*public class LoginForm
 {
-    public decimal CalculateDiscount(decimal amount)
+    public void LoginButtonClick(string email, string password)
     {
-        return 0m;
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            Console.WriteLine("Please enter email and password");
+            return;
+        }
+
+        using var conn = new SqlConnection("Server=.;Database=App;Trusted_Connection=True;");
+        conn.Open();
+
+        var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Email = @email AND Password = @pwd";
+        cmd.Parameters.AddWithValue("@email", email);
+        cmd.Parameters.AddWithValue("@pwd", password);
+
+        var count = (int)cmd.ExecuteScalar();
+        if (count > 0)
+            Console.WriteLine("Login success");
+        else
+            Console.WriteLine("Login failed");
     }
 }
-
-public class CheckoutService
+*/
+public interface IAuthService
 {
-    private readonly IDiscountCalculator _discountCalculator;
-
-    public CheckoutService(IDiscountCalculator discountCalculator)
+    bool Login(string email, string password);
+}
+public class SqlAuthService : IAuthService
+{
+    private readonly string _connectionString;
+    public SqlAuthService(string connectionString)
     {
-        _discountCalculator = discountCalculator;
+        _connectionString = connectionString;
     }
-
-    public void ProcessOrder(Order order)
+    public bool Login(string email, string password)
     {
-        Console.WriteLine($"Оформляем заказ. Сумма без скидки: {order.Amount}");
+        using var conn = new SqlAuthService(_connectionString);
+        conn.Open();
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = "SELECT COUNT(*) FROM Users WHERE Email = @email AND Password = @pwd";
+        cmd.Parameters.AddWithValue("@email", email);
+        cmd.Parameters.AddWithValue("@pwd", password);
 
-        decimal discount = _discountCalculator.CalculateDiscount(order.Amount);
-        decimal finalAmount = order.Amount - discount;
-
-        Console.WriteLine($"Скидка: {discount}");
-        Console.WriteLine($"Итоговая сумма к оплате: {finalAmount}\n");
+        var count = (int)cmd.ExecuteScalar();
+        return count > 0;
     }
 }
-
-class Program
+public class LoginForm : IAuthService
 {
-    static void Main()
+    private readonly IAuthService _authService;
+    public LoginForm(IAuthService authService)
     {
-        var order = new Order { Amount = 2000m };
-
-        IDiscountCalculator holiday = new HolidayDiscountCalculator();
-        var holidayCheckout = new CheckoutService(holiday);
-        holidayCheckout.ProcessOrder(order);
-
-        IDiscountCalculator student = new StudentDiscountCalculator();
-        var studentCheckout = new CheckoutService(student);
-        studentCheckout.ProcessOrder(order);
-
-        IDiscountCalculator vip = new VipDiscountCalculator();
-        var vipCheckout = new CheckoutService(vip);
-        vipCheckout.ProcessOrder(order);
-
-        IDiscountCalculator noDiscount = new NoDiscountCalculator();
-        var noDiscountCheckout = new CheckoutService(noDiscount);
-        noDiscountCheckout.ProcessOrder(order);
+        _authService = authService;
+    }
+    public bool LoginButtonClick(string email, string password) 
+    {
+        if (string.IsNullOrWhiteSpace(email) || string.IsNullOrWhiteSpace(password))
+        {
+            Console.WriteLine("Please enter email and password");
+            return;
+        }
+        bool ok = _auth.Login(email, password);
+        Console.WriteLine(ok ? "Login success" : "Login failed");
     }
 }

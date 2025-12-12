@@ -147,3 +147,40 @@ public class PdfExporter : IExportToPdf
     public void ExportToPdf(string data)
         => Console.WriteLine("Exporting to PDF");
 }
+
+/*public interface IRepository<T>
+{
+    T Get(int id);
+    List<T> GetAll();
+
+    void Add(T entity);
+    void Update(T entity);
+    void Delete(T entity);
+
+    void BulkInsert(IEnumerable<T> entities);
+
+    void SaveChanges();
+
+    Task<T> GetAsync(int id);
+    Task BulkInsertAsync(IEnumerable<T> entities);
+}*/
+
+public interface IAddable
+{
+    void Add();
+}
+
+public interface IUpdatable
+{
+    void Update();
+}
+
+public interface IDeletable
+{
+    void Delete();
+}
+
+public interface IBulkInsertable
+{
+    void BulkInsert();
+}

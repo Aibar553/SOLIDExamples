@@ -349,3 +349,59 @@ public class PriceCalculator
 }
 
 
+
+/*public class BankAccount
+{
+    public string Number { get; set; }
+    public decimal Balance { get; set; }
+}
+public class BankService
+{
+    public void Deposit(BankAccount account, decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Invalid amount");
+
+        account.Balance += amount;
+    }
+
+    public void Withdraw(BankAccount account, decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Invalid amount");
+
+        if (account.Balance < amount)
+            throw new InvalidOperationException("Not enough money");
+
+        account.Balance -= amount;
+    }
+}*/
+
+public class BankAccount
+{
+    public string Number { get; set; }
+    public decimal Balance { get; set; }
+
+    public void Deposit(decimal amount)
+    {
+        if (amount <= 0)
+            throw new ArgumentException("Invalid amount");
+        Balance += amount;
+    }
+    public void Withdraw(decimal amount)
+    {
+        if (amount < 0)
+            throw new ArgumentException("Invalid amount");
+        if (Balance < amount)
+            throw new InvalidOperationException("Not enough money");
+        Balance -= amount;
+    }
+}
+public class BankService
+{
+    public void Deposit(BankAccount from, BankAccount to, decimal amount)
+    {
+        from.Deposit(amount);
+        to.Deposit(amount);
+    }
+}

@@ -1,218 +1,164 @@
-public class OrderItem
-{
-    public string ProductName { get; }
-    public decimal UnitPrice { get; }
-    public int Quantity { get; private set; }
-
-    public OrderItem(string productName, decimal unitPrice, int quantity)
-    {
-        if (string.IsNullOrWhiteSpace(productName))
-            throw new ArgumentException("Название товара обязательно", nameof(productName));
-        if (unitPrice <= 0)
-            throw new ArgumentException("Цена должна быть > 0", nameof(unitPrice));
-        if (quantity <= 0)
-            throw new ArgumentException("Количество должно быть > 0", nameof(quantity));
-
-        ProductName = productName;
-        UnitPrice = unitPrice;
-        Quantity = quantity;
-    }
-
-    public decimal GetTotal() => UnitPrice * Quantity;
-
-    public void ChangeQuantity(int newQuantity)
-    {
-        if (newQuantity <= 0)
-            throw new ArgumentException("Количество должно быть > 0", nameof(newQuantity));
-        Quantity = newQuantity;
-    }
+/*public class Order 
+{ 
+    public List<Item> Items; 
+    public decimal Discount; 
 }
+public decimal Total(Order o) => 
+    o.Items.Sum(i => i.Price) * (1 - o.Discount);*/
 
 public class Order
 {
-    private readonly List<OrderItem> _items = new List<OrderItem>();
-    public IReadOnlyList<OrderItem> Items => _items.AsReadOnly();
-
-    public decimal Discount { get; private set; }
-
-    public void AddItem(string productName, decimal unitPrice, int quantity)
-    {
-        var item = new OrderItem(productName, unitPrice, quantity);
-        _items.Add(item);
-    }
-
-    public decimal GetTotalWithoutDiscount()
-    {
-        return _items.Sum(i => i.GetTotal());
-    }
-
-    public decimal GetTotal()
-    {
-        return GetTotalWithoutDiscount() - Discount;
-    }
-
-    public void ApplyDiscount(decimal discount)
-    {
-        if (discount < 0)
-            throw new ArgumentException("Скидка не может быть отрицательной", nameof(discount));
-
-        var totalWithoutDiscount = GetTotalWithoutDiscount();
-        if (discount > totalWithoutDiscount)
-            throw new ArgumentException("Скидка не может быть больше суммы заказа", nameof(discount));
-
-        Discount = discount;
-    }
+    public List<Item> Items = new();
+    public decimal Discount;
+    public decimal Total() => Items.Sum(i => i.Price) 
+        * (1 - Discount);
 }
-/*public class CartItem
+/*public class Employee { public decimal Salary; }
+public decimal Annual(Employee e) => e.Salary * 12;*/
+
+public class Employee
 {
-    public string ProductName { get; set; }
-    public decimal Price { get; set; }
-    public int Qty { get; set; }
+    public decimal Salary;
+    public decimal Annual() => Salary * 12;
 }
 
-public class ShoppingCart
+/*public class Product 
+{ 
+    public decimal Price; 
+    public decimal Discount; 
+    public decimal Tax; 
+}
+public decimal FinalPrice(Product p) => 
+    (p.Price * (1 - p.Discount)) * (1 + p.Tax);*/
+
+public class Product
 {
-    public List<CartItem> Items { get; set; } = new List<CartItem>();
+    public decimal Price;
+    public decimal Discount;
+    public decimal Tax;
+    public decimal FinalPrice()
+    {
+        return Price * (1 - Discount) * (1 + Tax);
+    }
 }
 
-public class CartService
-{
-    public void AddItem(ShoppingCart cart, string productName, decimal price, int qty)
-    {
-        cart.Items.Add(new CartItem
-        {
-            ProductName = productName,
-            Price = price,
-            Qty = qty
-        });
-    }
+/*public class Cart 
+{ 
+    public List<Item> Items; 
+}
+public void Add(Cart c, Item i) => c.Items.Add(i);
+public decimal Total(Cart c) => c.Items.Sum(x => x.Price);*/
 
-    public decimal GetTotal(ShoppingCart cart)
+public class Cart
+{
+    public List<Item> Items;
+    public void Add(Item i)
     {
-        return cart.Items.Sum(i => i.Price * i.Qty);
+        Items.Add(i);
     }
+    public decimal Total()
+    {
+        Items.Sum(x => x.Price);
+    }
+}
+
+
+/*public class BankAccount { public decimal Balance; }
+public void Withdraw(BankAccount a, decimal amt)
+{
+    if (a.Balance < amt) throw new InvalidOperationException();
+    a.Balance -= amt;
 }*/
-public class CartItem
-{
-    public string ProductName { get; }
-    public decimal Price { get; }
-    public int Qty { get; private set; }
-    public CartItem(string productName, decimal price, int qty)
-    {
-        if (string.IsNullOrWhiteSpace(productName))
-            throw new ArgumentException("Product name required", nameof(productName));
-        if (price <= 0)
-            throw new ArgumentException("Price must be positive", nameof(price));
-        if (qty <= 0)
-            throw new ArgumentException("Qty must be positive", nameof(qty));
 
-        ProductName = productName;
-        Price = price;
-        Qty = qty;
-    }
-    public void AddItem(int delta)
-    {
-        if (delta <= 0)
-        {
-            throw new ArgumentException("Delta must be positive");
-        }
-        Qty += delta;
-    }
-    public decimal GetTotal()
-    {
-        return Price * Qty;
-    }
-}
-public class ShoppingCart
+public class BankAccount
 {
-    private readonly List<CartItem> _items = new List<CartItem>();
-    public IReadOnlyCollection<CartItem> Items => _items.AsReadOnly();
-
-    public void AddItem(string productName, decimal price, int qty)
+    public decimal Balance;
+    public void Withdraw(decimal amt)
     {
-        _items.Add(new CartItem(productName, price, qty));
-    }
-    public decimal GetTotal()
-    {
-        return _items.Sum(i => i.GetTotal);
-    }
-}
-public class CartService
-{
-    public decimal Checkout(ShoppingCart cart)
-    {
-        var total = cart.GetTotal();
-        return total;
+        if(Balance < amt)
+            throw new InvalidOperationException();
+        Balance -= amt;
     }
 }
 
-
-/*public class Booking
-{
-    public int Id { get; set; }
-    public DateTime DateFrom { get; set; }
-    public DateTime DateTo { get; set; }
-    public bool IsCancelled { get; set; }
+/*public class Rectangle 
+{ 
+    public int W; 
+    public int H; 
 }
+public int Area(Rectangle r) => r.W * r.H;
+public int Perimeter(Rectangle r) => 2 * (r.W + r.H);*/
 
-public class BookingService
+public class Rectangle
 {
-    public void Cancel(Booking booking)
+    public int W;
+    public int H;
+    public int Area()
     {
-        booking.IsCancelled = true;
+        return W * H;
     }
-
-    public void Reschedule(Booking booking, DateTime newFrom, DateTime newTo)
+    public int Perimeter()
     {
-        if (newFrom >= newTo)
-            throw new ArgumentException("Invalid date range");
-
-        booking.DateFrom = newFrom;
-        booking.DateTo = newTo;
+        2 * (W + H);
     }
 }
-*/
+
+/*public class Student { public List<int> Grades; }
+public double Gpa(Student s) => s.Grades.Average();
+public bool Passed(Student s, double thr) => Gpa(s) >= thr;*/
+
+public class Student
+{
+    public List<int> Grades;
+    public double Gpa()
+    {
+        return Grades.Count == 0 ? 0 : Grades.Average();
+    }
+    public bool Passed(double thr)
+    {
+        return Gpa() >= thr;
+    }
+}
+
+/*public class Address { public string City, Zip, Street; }
+public bool CanDeliver(Address a) => a.City == "Almaty" && a.Zip.StartsWith("05");
+public string Format(Address a) => $"{a.City}, {a.Street}, {a.Zip}";*/
+
+public class Address
+{
+    public string City, Zip, Street;
+    public bool CanDeliver()
+    {
+        return City = "Shymkent" && Zip.StartsWith("02") == true;
+    }
+    public string Format()
+    {
+        return $"{City}, {Street}, {Zip}";
+    }
+}
+
+/*public class Booking { public DateTime Start, End; }
+public bool Overlaps(Booking a, Booking b) => a.Start <= b.End && b.Start <= a.End;*/
+
 public class Booking
 {
-    public int Id { get; set; }
-    public DateTime DateFrom { get; set; }
-    public DateTime DateTo { get; set; }
-    public bool IsCancelled { get; set; }
-    public Booking(int id, DateTime from, DateTime to)
+    public DateTime Start, End;
+    public bool Overlaps(Booking other)
     {
-        if (from >= to)
-            throw new ArgumentException("Invalid date range");
-        Id = id;
-        DateFrom = from;
-        DateTo = to;
-        IsCancelled = true;
-    }
-    public void Cancel()
-    {
-        IsCancelled = true;
-    }
-    public void Reschedule(DateTime newFrom, decimal newTo)
-    {
-        if (IsCancelled)
-        {
-            throw new InvalidOperationException("Cannot reschedule cancelled booking");
-        }
-        if (newFrom >= newTo)
-        {
-            throw new ArgumentException("Invalid date range");
-        }
-        DateFrom = newFrom;
-        DateTo = newTo;
+        return Start <= other.End && other.Start <= End;
     }
 }
-public class BookingService
+
+
+/*public class LoanApplication { public decimal Income, Debts; public int Age; }
+public bool Approved(LoanApplication a) => a.Age >= 21 && a.Income > a.Debts * 2;*/
+
+public class LoanApplication
 {
-    public void CancelBooking(Booking booking)
+    public decimal Income, Debts;
+    public int Age;
+    public bool Application()
     {
-        booking.Cancel();
-    }
-    public void RescheduleBooking(Booking booking)
-    {
-        booking.Reschedule(newFrom, newTo);
+        return Age >= 21 && Income > Debts * 2;
     }
 }

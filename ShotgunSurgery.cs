@@ -133,3 +133,111 @@ public class BonusService
 {
     public decimal GetNetAfterBonus(Employee e) => e.GrossSalaryTotalBonus(bonus);
 }
+
+
+/*public class OrderController
+{
+    public decimal GetTotal(decimal amount, bool isVip)
+    {
+        if (isVip)
+            amount *= 0.9m;   // 10% скидка
+
+        return amount;
+    }
+}
+
+public class DiscountBanner
+{
+    public string GetMessage(bool isVip)
+    {
+        if (isVip)
+            return "You have 10% VIP discount!";
+
+        return "Become VIP to get 10% discount!";
+    }
+}
+
+public class EmailService
+{
+    public string BuildVipOffer(bool isVip)
+    {
+        if (!isVip)
+            return "Become VIP and get 10% discount on all orders!";
+
+        return "Thank you for being VIP! Enjoy your 10% discount.";
+    }
+}
+*/
+public interface IVipPolicy
+{
+    decimal ApplyDiscount(decimal discount, bool isVip);
+    string GetBannerMessage(bool isVip);
+    string GetEmailOffer(bool isVip);
+}
+public class VipPolicy : IVipPolicy
+{
+    private const decimal VipDiscount = 0.10m;
+
+    public decimal ApplyDiscount(decimal amount, bool isVip)
+    {
+        return isVip ? amount * (1 - VipDiscount) : amount;
+    }
+
+    public string GetBannerMessage(bool isVip)
+    {
+        return isVip
+            ? "You have 10% VIP discount!"
+            : "Become VIP to get 10% discount!";
+    }
+
+    public string GetEmailOffer(bool isVip)
+    {
+        return isVip
+            ? "Thank you for being VIP! Enjoy your 10% discount."
+            : "Become VIP and get 10% discount on all orders!";
+    }
+}
+public class OrderController
+{
+    private readonly IVipPolicy _vip;
+
+    public OrderController(IVipPolicy vip)
+    {
+        _vip = vip;
+    }
+
+    public decimal GetTotal(decimal amount, bool isVip)
+    {
+        return _vip.ApplyDiscount(amount, isVip);
+    }
+}
+
+public class DiscountBanner
+{
+    private readonly IVipPolicy _vip;
+
+    public DiscountBanner(IVipPolicy vip)
+    {
+        _vip = vip;
+    }
+
+    public string GetMessage(bool isVip)
+    {
+        return _vip.GetBannerMessage(isVip);
+    }
+}
+
+public class EmailService
+{
+    private readonly IVipPolicy _vip;
+
+    public EmailService(IVipPolicy vip)
+    {
+        _vip = vip;
+    }
+
+    public string BuildVipOffer(bool isVip)
+    {
+        return _vip.GetEmailOffer(isVip);
+    }
+}

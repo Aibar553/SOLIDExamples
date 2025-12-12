@@ -160,3 +160,65 @@ class Program
         push.Send("Nigga", "SS");
     }
 }
+
+
+
+/*public class DiscountCalculator
+{
+    public decimal GetDiscount(string customerStatus, decimal amount, int itemsCount)
+    {
+        decimal discount = 0m;
+
+        if (customerStatus == "New")
+        {
+            if (itemsCount > 3)
+                discount = amount * 0.05m;
+        }
+        else if (customerStatus == "Regular")
+        {
+            discount = amount * 0.10m;
+            if (itemsCount > 5)
+                discount += amount * 0.05m;
+        }
+        else if (customerStatus == "VIP")
+        {
+            discount = amount * 0.20m;
+            if (amount > 1000m)
+                discount += amount * 0.10m;
+        }
+
+        return discount;
+    }
+}
+*/
+public interface IDiscountMethod
+{
+    public decimal GetDiscount(decimal amount);
+}
+public class NewStatus : IDiscountMethod
+{
+    public decimal GetDiscount(decimal amount)
+    {
+        decimal discount = 0m;
+        discount = amount * 0.05m;
+        return discount;
+    }
+}
+public class RegularStatus : IDiscountMethod
+{
+    public decimal GetDiscount(decimal amount)
+    {
+        decimal discount = 0.10m;
+        discount = amount * 0.05m;
+        return discount;
+    }
+}
+public class VIPStatus : IDiscountMethod
+{
+    public decimal GetDiscount(decimal amount)
+    {
+        decimal discount = 0.20m;
+        discount = amount * 0.05m;
+        return discount;
+    }
+}

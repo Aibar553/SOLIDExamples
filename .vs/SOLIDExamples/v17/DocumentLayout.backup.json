@@ -3,6 +3,10 @@
   "WorkspaceRootPath": "C:\\Users\\ARYSBAYA\\source\\repos\\SOLIDExamples\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ARYSBAYA\\source\\repos\\SOLIDExamples\\ShotgunSurgery2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:ShotgunSurgery2.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ARYSBAYA\\source\\repos\\SOLIDExamples\\TightCoupling.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:TightCoupling.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
@@ -27,6 +31,19 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "ShotgunSurgery2.cs",
+              "DocumentMoniker": "C:\\Users\\ARYSBAYA\\source\\repos\\SOLIDExamples\\ShotgunSurgery2.cs",
+              "RelativeDocumentMoniker": "ShotgunSurgery2.cs",
+              "ToolTip": "C:\\Users\\ARYSBAYA\\source\\repos\\SOLIDExamples\\ShotgunSurgery2.cs",
+              "RelativeToolTip": "ShotgunSurgery2.cs",
+              "ViewState": "AgIAAF0AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-12-12T06:02:32.818Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
               "Title": "TightCoupling.cs",
               "DocumentMoniker": "C:\\Users\\ARYSBAYA\\source\\repos\\SOLIDExamples\\TightCoupling.cs",
               "RelativeDocumentMoniker": "TightCoupling.cs",
@@ -34,12 +51,11 @@
               "RelativeToolTip": "TightCoupling.cs",
               "ViewState": "AgIAAK4AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-12T04:06:59.461Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-12T04:06:59.461Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "AnemicModel2.cs",
               "DocumentMoniker": "C:\\Users\\ARYSBAYA\\source\\repos\\SOLIDExamples\\AnemicModel2.cs",
               "RelativeDocumentMoniker": "AnemicModel2.cs",
@@ -47,12 +63,11 @@
               "RelativeToolTip": "AnemicModel2.cs",
               "ViewState": "AgIAABgAAAAAAAAAAAAUwKEAAAAvAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-12-11T08:22:28.775Z",
-              "EditorCaption": ""
+              "WhenOpened": "2025-12-11T08:22:28.775Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "AnemicModel.cs",
               "DocumentMoniker": "C:\\Users\\ARYSBAYA\\source\\repos\\SOLIDExamples\\AnemicModel.cs",
               "RelativeDocumentMoniker": "AnemicModel.cs",

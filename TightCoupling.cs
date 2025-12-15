@@ -193,3 +193,93 @@ public class SalesReportService
         await _sender.SendAsync("Daily Report", body, email);
     }
 }
+
+/*
+Ещё один частый мини-провал (время)
+public class Clock
+{
+    public bool IsNight() => DateTime.Now.Hour < 6;
+}*/
+
+public interface ITimeProvider {DateTime Now {get;}}
+public class Clock
+{
+    private readonly ITimeProvider _time;
+    public Clock(ITimeProvider time) => _time = time;
+    public bool IsNight() => _time.Now.Hour < 6;
+}
+
+
+/*
+Guid.NewGuid() внутри доменной логики
+public class IdFactory
+{
+    public string NewOrderId() => Guid.NewGuid().ToString("N");
+}
+*/
+
+public interface IFactory
+{
+    Guid NewGuid();
+}
+public class IdFactory
+{
+    private readonly IFactory _factory;
+    public IdFactory(IFactory factory) => _factory = factory;
+    public string NewOrderId() => _factory.NewGuid().ToString("N");
+}
+
+
+/*
+Thread.Sleep в бизнес-методе
+public class Retryer
+{
+    public void Do(Action act)
+    {
+        for (int i = 0; i < 3; i++) 
+        try { act(); return; } catch { Thread.Sleep(200); }
+    }
+}
+*/
+public interface IWaiter
+{
+    void Delay(TimeSpan t);
+}
+public class Retryer
+{
+    private readonly IWaiter _wait;
+    public Retryer(IWaiter w) => _wait = w;
+    public void Do(Action act)
+    {
+        for(int i = 0; i < 3; i++) 
+        try{
+            act(); return;
+        }
+        catch{
+            _wait.Delay(TimeSpan.FromMilliseconds(200));
+        }
+    }
+}
+
+/*
+new HttpClient() прямо в методе
+public class WeatherApi
+{
+    public async Task<string> GetAsync(string city)
+    {
+        using var http = new HttpClient();
+        return await http.GetStringAsync($"https://api?q={city}");
+    }
+}*/
+
+public interface IHttpClient
+{
+    Task<string> GetStringAsync(string url);
+}
+public class WeatherApi
+{
+    private readonly IHttpClient _http;
+    public WeatherApi(IHttpClient http) => _http = http;
+    public Task<string> GetAsync(string city) 
+    => _http.GetStringAsync($"https://api?q={city}");
+}

@@ -7,7 +7,7 @@ public class OrderController
 {
     public decimal GetFinalAmount(Order order)
     {
-        // скидка 10% если total > 1000
+        // пїЅпїЅпїЅпїЅпїЅпїЅ 10% пїЅпїЅпїЅпїЅ total > 1000
         if (order.Total > 1000)
             return order.Total * 0.9m;
 
@@ -19,7 +19,7 @@ public class ReportService
 {
     public decimal GetDiscountedAmount(Order order)
     {
-        // та же логика
+        // пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         if (order.Total > 1000)
             return order.Total * 0.9m;
 
@@ -31,7 +31,7 @@ public class PromoService
 {
     public decimal PreviewDiscount(Order order)
     {
-        // снова та же логика
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         if (order.Total > 1000)
             return order.Total * 0.9m;
 
@@ -45,7 +45,7 @@ public class Order
     public decimal GetDiscountedTotal()
     {
         if (Total > 2000)
-            return Total * 0.85m; // 15% скидка
+            return Total * 0.85m; // 15% пїЅпїЅпїЅпїЅпїЅпїЅ
 
         return Total;
     }
@@ -74,7 +74,7 @@ public class PayrollService
 {
     public decimal CalculateNet(Employee e)
     {
-        // налог 10%
+        // пїЅпїЅпїЅпїЅпїЅ 10%
         var tax = e.GrossSalary * 0.10m;
         return e.GrossSalary - tax;
     }
@@ -84,7 +84,7 @@ public class ReportGenerator
 {
     public decimal GetNetForReport(Employee e)
     {
-        // тот же расчёт
+        // пїЅпїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         var tax = e.GrossSalary * 0.10m;
         return e.GrossSalary - tax;
     }
@@ -95,7 +95,7 @@ public class BonusService
     public decimal GetNetAfterBonus(Employee e, decimal bonus)
     {
         var gross = e.GrossSalary + bonus;
-        // снова то же
+        // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ
         var tax = gross * 0.10m;
         return gross - tax;
     }
@@ -140,7 +140,7 @@ public class BonusService
     public decimal GetTotal(decimal amount, bool isVip)
     {
         if (isVip)
-            amount *= 0.9m;   // 10% скидка
+            amount *= 0.9m;   // 10% пїЅпїЅпїЅпїЅпїЅпїЅ
 
         return amount;
     }
@@ -240,4 +240,54 @@ public class EmailService
     {
         return _vip.GetEmailOffer(isVip);
     }
+}
+/*
+РќР°Р»РѕРіРё РїРѕ СЃС‚СЂР°РЅР°Рј (VAT/РїРѕРґРѕС…РѕРґРЅС‹Р№/РїСЂРѕРґР°Р¶РЅС‹Р№) вЂ” Strategy + Provider
+public class InvoiceService {
+    public decimal Vat(decimal net, string c) =>
+        c switch { "KZ"=>net*0.12m, "US"=>0m, "EU"=>net*0.20m, _=>throw new() };
+}
+public class PayrollService {
+    public decimal IncomeTax(decimal gross, string c) =>
+        c switch { "KZ"=>gross*0.10m, "US"=>gross*0.22m, "EU"=>gross*0.15m, _=>throw new() };
+}
+public class PricingService {
+    public decimal ApplySalesTax(decimal price, string c) =>
+        c switch { "KZ"=>price, "US"=>price*1.08m, "EU"=>price*1.20m, _=>throw new() };
+}
+*/
+public interface ITaxPolicy
+{
+    decimal Vat(decimal net); 
+    decimal IncomeTax(decimal gross); 
+    decimal SalesMult(decimal price);
+}
+public interface ITaxPolicyProvider { ITaxPolicy For(string country); }
+
+public sealed class KzTax : ITaxPolicy {
+    public decimal Vat(decimal net)=>net*0.12m;
+    public decimal IncomeTax(decimal gross)=>gross*0.10m;
+    public decimal SalesMult(decimal price)=>1.00m;
+}
+public sealed class UsTax : ITaxPolicy {
+    public decimal Vat(decimal net)=>0m;
+    public decimal IncomeTax(decimal gross)=>gross*0.22m;
+    public decimal SalesMult(decimal price)=>1.08m;
+}
+public sealed class EuTax : ITaxPolicy {
+    public decimal Vat(decimal net)=>net*0.20m;
+    public decimal IncomeTax(decimal gross)=>gross*0.15m;
+    public decimal SalesMult(decimal price)=>1.20m;
+}
+
+public sealed class TaxProvider : ITaxPolicyProvider {
+    private readonly Dictionary<string,ITaxPolicy> _map;
+    public TaxProvider(IEnumerable<(string code, ITaxPolicy p)> items) =>
+        _map = items.ToDictionary(x=>x.code.ToUpperInvariant(), x=>x.p);
+    public ITaxPolicy For(string country) => _map[country.ToUpperInvariant()];
+}
+
+public class InvoiceService {
+    private readonly ITaxPolicyProvider _p; public InvoiceService(ITaxPolicyProvider p)=>_p=p;
+    public decimal Vat(decimal net, string c)=>_p.For(c).Vat(net);
 }

@@ -162,3 +162,126 @@ public class LoanApplication
         return Age >= 21 && Income > Debts * 2;
     }
 }
+
+/*
+Booking — правила отмены 
+(бесплатно до 48ч, иначе штраф; non-refundable нельзя)
+public class Booking
+{
+    public DateTime CheckIn;
+    public bool NonRefundable;
+    public decimal Price;
+}
+public decimal RefundAmount(Booking b, DateTime cancelAt)
+{
+    if (b.NonRefundable) return 0;
+    var hours = (b.CheckIn - cancelAt).TotalHours;
+    if (hours >= 48) return b.Price;          // полная
+    if (hours >= 24) return b.Price * 0.5m;   // 50%
+    return 0;                                  // нет возврата
+}
+*/
+
+public class Booking
+{
+    public DateTime CheckIn;
+    public bool NonRefundable;
+    public decimal Price;
+    public Booking(DateTime checkIn, bool nonRefundable, decimal price)
+    {
+        if (price <= 0) throw new ArgumentOutOfRangeException(nameof(price));
+        if (checkIn <= DateTime.UtcNow) throw new ArgumentException("Check-in in past");
+        CheckIn = checkIn; NonRefundable = nonRefundable; Price = price;
+    }
+    public decimal RefundAmount(DateTime cancelAt)
+    {
+        if(NonRefundable) return 0;
+        var hours = (CheckIn - cancelAt).TotalHours;
+        if (hours >= 48) return Price;          // полная
+        if (hours >= 24) return Math.Round(Price * 0.5m, 2);   // 50%
+        return 0;                                  // нет возврата
+    }
+}
+/*
+Loyalty — расчёт баллов (мультипликатор по tier + месячный бонус)
+❌ Анемично
+public class LoyaltyAccount { public string Tier; public int Points; }
+public int Earn(LoyaltyAccount a, decimal purchase)
+{
+    var basePts = (int)Math.Floor(purchase);
+    var mult = a.Tier == "Gold" ? 2 : a.Tier == "Silver" ? 1.5m : 1m;
+    return (int)(basePts * mult);
+}
+public int MonthlyBonus(LoyaltyAccount a, int monthSpend)
+    => monthSpend >= 1000 ? 500 : 0;
+*/
+
+public enum Tier { Bronze, Silver, Gold }
+
+public class LoyaltyAccount
+{
+    public Tier Tier { get; private set; }
+    public int Points { get; private set; }
+
+    public LoyaltyAccount(Tier tier, int initialPoints = 0)
+    {
+        if (initialPoints < 0) throw new ArgumentOutOfRangeException();
+        Tier = tier; Points = initialPoints;
+    }
+
+    public int EarnFrom(decimal purchaseAmount)
+    {
+        if (purchaseAmount <= 0) return 0;
+        var basePts = (int)Math.Floor(purchaseAmount);        // 1 балл = 1 у.е.
+        decimal mult = Tier == Tier.Gold ? 2m : Tier == Tier.Silver ? 1.5m : 1m;
+        var earned = (int)Math.Floor(basePts * mult);
+        Points += earned;
+        return earned;
+    }
+
+    public int ApplyMonthlyBonus(decimal monthlySpend)
+    {
+        var bonus = monthlySpend >= 1000m ? 500 : 0;
+        Points += bonus;
+        return bonus;
+    }
+}
+
+/*Shipment — цена по зонам и весовым порогам (зоны A/B/C, шаги веса)
+❌ Анемично
+public class Shipment { public string Zone; public decimal WeightKg; }
+public decimal CalcPrice(Shipment s)
+{
+    if (s.Zone == "A") return s.WeightKg <= 1 ? 
+       1000 : 1000 + (s.WeightKg - 1) * 300;
+    if (s.Zone == "B") return s.WeightKg <= 1 ? 
+       1500 : 1500 + (s.WeightKg - 1) * 400;
+    if (s.Zone == "C") return s.WeightKg <= 1 ? 
+       2000 : 2000 + (s.WeightKg - 1) * 500;
+    throw new ArgumentException("Unknown zone");
+}*/
+
+public enum Zone{ A, B, C }
+public class Shipment
+{
+    public Zone Zone;
+    public decimal WeightKg;
+    public Shipment(Zone zone, decimal weightkg = 0)
+    {
+        Zone = zone; WeightKg = weightkg;
+        if (weightkg < 0) throw new ArgumentOutOfRangeException();
+    }
+    public decimal CalcPrice()
+    {
+        var (basePrice, step) = Zone switch
+        {
+            Zone.A => (1000m, 300m),
+            Zone.B => (1500m, 400m),
+            Zone.C => (2000m, 500m),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+        if (WeightKg <= 1m) return basePrice;
+        var extra = Math.Ceiling((double)(WeightKg - 1m)); // округляем до кг
+        return basePrice + (decimal)extra * step;
+    }
+}

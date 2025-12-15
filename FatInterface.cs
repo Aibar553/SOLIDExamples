@@ -153,4 +153,3 @@ public interface ICopyable
 {
     void Copy(string sourceTray, string destinationTray);
 }
-

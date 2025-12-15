@@ -24,13 +24,13 @@ public class NotificationService
     public string GetStatusText(TaskItem task)
     {
         if (task.Status == "New")
-            return "Задача создана";
+            return "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
         if (task.Status == "InProgress")
-            return "Задача в работе";
+            return "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
         if (task.Status == "Done")
-            return "Задача завершена";
+            return "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ";
 
-        return "Неизвестный статус";
+        return "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ";
     }
 }*/
 public enum TaskStatus
@@ -54,10 +54,10 @@ public class TaskItem
     {
         return Status switch
         {
-            TaskStatus.New => "Задача создана",
-            TaskStatus.InProgress => "Задача в работе",
-            TaskStatus.Done => "Задача завершена",
-            _ => "Неизвестный статус"
+            TaskStatus.New => "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
+            TaskStatus.InProgress => "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ",
+            TaskStatus.Done => "пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ",
+            _ => "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ"
         };
     }
     public void Start() => Status = TaskStatus.InProgress;
@@ -98,7 +98,7 @@ public class ReportService
         decimal total = 0;
         foreach (var inv in invoices)
         {
-            total += inv.AmountUsd * rateUsdKzt; // снова та же формула
+            total += inv.AmountUsd * rateUsdKzt; // пїЅпїЅпїЅпїЅпїЅ пїЅпїЅ пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         }
         return total;
     }
@@ -108,7 +108,7 @@ public class ExportService
 {
     public string ExportInvoice(Invoice inv, decimal rateUsdKzt)
     {
-        var amountKzt = inv.AmountUsd * rateUsdKzt; // и снова
+        var amountKzt = inv.AmountUsd * rateUsdKzt; // пїЅ пїЅпїЅпїЅпїЅпїЅ
         return $"Invoice: {inv.AmountUsd} USD ({amountKzt} KZT)";
     }
 }*/
@@ -126,7 +126,7 @@ public class Invoice
 
     public decimal ToKzt(decimal rateUsdKzt)
     {
-        // тут можно добавить комиссию, округление и т.п.
+        // пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ, пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅ.пїЅ.
         return Math.Round(AmountUsd * rateUsdKzt, 2);
     }
 }
@@ -159,7 +159,7 @@ public class ExportService
 {
     public decimal CalculateTotal(decimal amount)
     {
-        var tax = amount * 0.12m;   // НДС 12%
+        var tax = amount * 0.12m;   // пїЅпїЅпїЅ 12%
         return amount + tax;
     }
 }
@@ -168,7 +168,7 @@ public class InvoiceService
 {
     public decimal CalculateInvoiceTotal(decimal amount)
     {
-        var tax = amount * 0.12m;   // НДС 12%
+        var tax = amount * 0.12m;   // пїЅпїЅпїЅ 12%
         return amount + tax;
     }
 }
@@ -177,7 +177,7 @@ public class ReportingService
 {
     public decimal CalculateTax(decimal amount)
     {
-        return amount * 0.12m;      // НДС 12%
+        return amount * 0.12m;      // пїЅпїЅпїЅ 12%
     }
 }*/
 
@@ -231,3 +231,56 @@ public class ReportingService
         return _taxService.CalculateTax(amount);
     }
 }
+
+/*
+// OrdersController
+if (user.Role == "Admin" || user.Role == "Manager") { /* approve  } else return Forbid();
+
+// ReportsController
+//if (user.Role == "Admin") Export(); else return Forbid();
+
+// UserService
+/*bool CanEdit(User u) => u.Role == "Admin" || u.Role == "Editor";
+}*/
+
+public enum Permission { ApproveOrder, ExportReport, EditUser }
+
+public interface IAuthorization
+{
+    bool Has(User user, Permission p);
+}
+public sealed class RoleBasedAuth : IAuthorization
+{
+    private static readonly Dictionary<string, Permission[]> Map = new()
+    {
+        ["Admin"]   = new[] { Permission.ApproveOrder, Permission.ExportReport, Permission.EditUser },
+        ["Manager"] = new[] { Permission.ApproveOrder },
+        ["Editor"]  = new[] { Permission.EditUser }
+    };
+
+    public bool Has(User u, Permission p) => Map.TryGetValue(u.Role, out var ps) && ps.Contains(p);
+}
+/*string BuildNumber(DateTime d, int seq) => $"{d:yyyy-MM}/INV-{seq:D5}"; // UI
+// ...
+var num = $"{DateTime.UtcNow:yyyy-MM}/INV-{seq:D5}"; // Service
+// ...
+cell.Value = $"{date:yyyy-MM}/INV-{id:D5}"; // Report
+*/
+
+public interface IInvoiceNumbering { string Next(DateTime utcNow, int seq); }
+
+public sealed class YearMonthNumbering : IInvoiceNumbering
+{
+    public string Next(DateTime now, int seq) => $"{now:yyyy-MM}/INV-{seq:D5}";
+}
+
+public sealed class NumberingService
+{
+    private readonly IInvoiceNumbering _strategy;
+    public NumberingService(IInvoiceNumbering s) => _strategy = s;
+    public string Next(int seq) => _strategy.Next(DateTime.UtcNow, seq);
+}
+
+// Р’РµР·РґРµ РёСЃРїРѕР»СЊР·СѓРµРј NumberingService в†’ РјРµРЅСЏРµРј С„РѕСЂРјР°С‚ РІ РѕРґРЅРѕРј РјРµСЃС‚Рµ
+
+

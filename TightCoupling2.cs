@@ -218,3 +218,26 @@ public class LoginForm : IAuthService
         Console.WriteLine(ok ? "Login success" : "Login failed");
     }
 }
+
+/*Файловая система в логике
+public class ConfigLoader
+{
+    public string Load() => File.ReadAllText("/etc/app/config.json");
+}
+*/
+
+public interface ILoad
+{
+    string ReadAllText(string path);
+}
+public class ConfigLoader
+{
+    private readonly ILoad _load;
+    private readonly string _path;
+    public ConfigLoader(ILoad load)
+    {
+        _load = load;
+        _path = path;
+    }
+    public string Load() => _load.ReadAllText(_path);
+}

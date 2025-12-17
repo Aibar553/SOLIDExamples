@@ -280,8 +280,8 @@ public class Shipment
             Zone.C => (2000m, 500m),
             _ => throw new ArgumentOutOfRangeException()
         };
-        if (WeightKg <= 1m) return basePrice;
-        var extra = Math.Ceiling((double)(WeightKg - 1m)); // округляем до кг
-        return basePrice + (decimal)extra * step;
+        if(WeightKg <= 1m) return basePrice;
+        var extra = Math.Ceiling((double)(WeightKg - 1m));
+        return basePrice + (decimal) extra * step;
     }
 }

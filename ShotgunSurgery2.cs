@@ -284,3 +284,119 @@ public sealed class NumberingService
 // Везде используем NumberingService → меняем формат в одном месте
 
 
+/*
+Одинаковое сообщение об ошибке везде
+
+return "NotFound";
+throw new Exception("NotFound");
+logger.Log("NotFound");
+*/
+public static class Messages
+{
+    public const string NotFound = "NotFound";
+}
+
+/*
+Константа лимита дублируется
+❌
+public class A { public const int Max = 100; }
+public class B { public const int Max = 100; }
+*/
+public static class Maximum
+{
+    public const int Max = 100;
+}
+
+/*
+Формат даты копипастом
+❌
+d.ToString("dd/MM/yyyy"); // в 10 файлах
+*/
+
+public static class DataSet
+{
+    public const string Default = "dd/MM/yyyy";
+}
+
+/*
+“VIP” как magic string везде
+❌
+if (type == "VIP") price *= 0.8m;
+*/
+public enum CustomerType
+{
+    Regular, Vip
+}
+
+/*
+bool Valid(string e) => e.Contains("@"); // в разных сервисах
+*/
+
+public interface IEmailValidator
+{
+    bool IsValid(string e);
+}
+
+
+/*
+Feature flags: “новый флаг” требует правок в UI + API + worker
+❌ До (строки флага везде)
+if (flags.Contains("NewMenu")) ShowNewMenu();
+if (flags.Contains("NewMenu")) return Ok(NewMenu());
+if (flags.Contains("NewMenu")) EnqueueNewMenuJob();
+*/
+public enum Feature
+{
+    NewMenu, FastCheckout
+}
+public interface IFeatureFlags
+{
+    bool IsOn(Feature f);
+}
+
+/*
+Endpoint URLs: смена base URL ломает кучу клиентов
+❌ До
+await http.GetStringAsync("https://api.v1.company.com/users");
+await http.GetStringAsync("https://api.v1.company.com/orders");
+*/
+
+public interface IApiRoutes { string Users(); string Orders(); }
+public class ApiRoutes : IApiRoutes
+{
+    private readonly string _base;
+    public ApiRoutes(string baseUrl) => _base = baseUrl.TrimEnd('/');
+    public string Users() => $"{_base}/users";
+    public string Orders() => $"{_base}/orders";
+}
+
+/*JSON contract: переименовали поле → правим 10 парсеров
+❌ До
+var id = doc["user_id"].GetInt32();*/
+
+public sealed class UserDto
+{
+    [System.Text.Json.Serialization.JsonPropertyName("user_id")]
+    public int UserId {get; set;}
+}
+
+/*Нормализация строки (trim/upper) размазана по репозиториям
+❌ До
+var city = input.Trim().ToUpperInvariant(); */
+public sealed class CityName
+{
+    public string Value {get;}
+    public CityName(string raw) => Value = raw?.Trim().ToUpperInvariant() 
+        ?? throw new ArgumentNullException();
+}
+
+/*“Статусы заказа” строками: добавили новый статус → правки повсюду
+❌ До
+if (status == "Paid") Ship();
+if (status == "Paid") ShowBadge("PAID");
+if (status == "Paid") WriteAudit("paid");*/
+
+public enum Status
+{
+    New, Paid, Shipped, Cancelled
+}

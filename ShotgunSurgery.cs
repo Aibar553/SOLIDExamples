@@ -291,3 +291,111 @@ public class InvoiceService {
     private readonly ITaxPolicyProvider _p; public InvoiceService(ITaxPolicyProvider p)=>_p=p;
     public decimal Vat(decimal net, string c)=>_p.For(c).Vat(net);
 }
+
+/*
+Налоги по странам в разных сервисах (добавить страну = правки везде)
+❌
+decimal Vat(decimal net, string c) => 
+    c switch { "KZ"=>net*0.12m, "EU"=>net*0.20m, _=>0m };
+decimal Income(decimal gross, string c) => 
+    c switch { "KZ"=>gross*0.10m, "EU"=>gross*0.15m, _=>0m };
+*/
+
+public interface ITaxPolicy
+{
+    decimal Vat(decimal net);
+    decimal Income(decimal gross);
+}
+
+/*
+Политика ретраев копируется (цикл + delay в каждом месте)
+❌
+for(int i=0;i<3;i++) try { return Do(); } catch { Thread.Sleep(200); }
+*/
+
+public interface IRetryPolicy
+{
+    T Execute<T>(Func<T> action);
+}
+
+/*
+Скидки: VIP/BlackFriday/Mobile размазаны по коду
+❌
+if (vip) p*=0.9m;
+if (bf) p*=0.8m;
+if (mobile) p-=200m;
+*/
+
+public interface IDiscountPolicy
+{
+    decimal Apply(decimal price);
+}
+
+/*
+Рабочие часы/календарь дублируются (заказы/чат/курьер)
+❌
+bool OpenForOrders(DateTime t)=> t.Hour>=9 && t.Hour<18;
+bool OpenForChat(DateTime t)=> t.Hour>=10 && t.Hour<20;
+*/
+
+public interface ICalendar
+{
+    bool IsOpen(string service, DateTime when);
+}
+
+/*Формат отчёта (CSV/JSON/XML) дублируется в нескольких местах
+❌
+if (type=="CSV") return string.Join(",", data);
+if (type=="JSON") return JsonSerializer.Serialize(data);*/
+
+public interface IReportFormatter 
+{ 
+    string Format(IEnumerable<string> data); 
+}
+
+/*
+Политика “пароль должен быть сложным” копируется по слоям
+❌ До
+bool Strong(string p)=>p.Length>=8 && p.Any(char.IsDigit) 
+     && p.Any(char.IsUpper); // в API+UI+Batch
+*/
+
+public interface IPasswordPolicy { void Validate(string password); }
+
+/*
+Обработка ошибок: одно и то же “маппинг-правило” повторяется
+❌ До
+catch(SqlException ex) { return 500; }
+catch(TimeoutException) { return 504; } // копия в 6 сервисах
+*/
+
+public interface IErrorMapper
+{
+    int ToHttpStatus(Exception ex);
+}
+
+/*
+Логи аудита: формат записи/поля меняются → правим все места
+❌ До
+File.AppendAllText("audit.log", $"USER={u} ACTION={a} 
+    TS={DateTime.UtcNow}\n");
+*/
+
+public interface IAuditLog { void Write(AuditEvent e); }
+public record AuditEvent(string User, string Action, DateTime AtUtc);
+
+/*Кэш-ключи руками: поменяли схему ключей → правим весь проект
+❌ До
+var key = $"user:{id}:profile"; // в N местах
+cache.Set(key, value);*/
+
+public interface ICacheKeys { string UserProfile(int id); }
+public class CacheKeys : ICacheKeys { public string UserProfile(int id)=> $"user:{id}:profile"; }
+
+
+/*Правила пагинации/сортировки: поменяли default page size → правки везде
+❌ До
+int pageSize = 20; // повторяется
+query = query.Take(pageSize);*/
+
+public sealed class PagingOptions { public int DefaultSize { get; init; } = 20; }

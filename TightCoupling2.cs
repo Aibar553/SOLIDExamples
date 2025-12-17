@@ -241,3 +241,86 @@ public class ConfigLoader
     }
     public string Load() => _load.ReadAllText(_path);
 }
+
+/*public class WeatherApi
+{
+    public async Task<string> GetAsync(string city)
+    {
+        using var http = new HttpClient();
+        return await http.GetStringAsync($"https://api?q={city}");
+    }
+}*/
+
+public interface IHttpClient
+{
+    Task<string> GetStringAsync(string url);
+}
+public class WeatherApi
+{
+    private readonly IHttpClient _http;
+    public WeatherApi(IHttpClient http) => _http = http;
+    public Task<string> GetAsync(string city) => _http.GetStringAsync
+       ($"https://api?q={city}");
+}
+
+/*public class Notifier
+{
+    public Task Send(string email, string msg)
+        => new SmtpClient("smtp.local").SendMailAsync
+        ("noreply@x", email, "Hi", msg);
+}*/
+
+public interface ISmtpClient
+{
+    Task SendAsync(string to, string subject, string body);
+}
+public class Notifier
+{
+    private readonly ISmtpClient _smtp;
+    public Notifier(ISmtpClient smtp)
+    {
+        _smtp = smtp;
+    }
+    public Task Send(string email, string msg) =>
+       _smtp.SendAsync(email, "Hi", msg);
+}
+
+/*public class UserService
+{
+    public void Save(User u)
+    {
+        using var c = new SqlConnection("...");
+        c.Open();
+        // SQL commands...
+    }
+}
+*/
+public interface IUserRepository { void Save(User u); }
+
+public class UserService
+{
+    private readonly IUserRepository _repo;
+    public UserService(IUserRepository repo) => _repo = repo;
+    public void Save(User u) => _repo.Save(u);
+}
+
+/*public class ExportService
+{
+    public void Export(string type, string data)
+    {
+        if (type == "CSV") new CsvExporter().Export(data);
+        else if (type == "JSON") new JsonExporter().Export(data);
+    }
+}*/
+public interface IExporter
+{
+    void Export(string data);
+}
+public class ExportService : IExporter
+{
+    private readonly IReadOnlyDictionary<string, IExporter> _map;
+    public ExportService(IReadOnlyDictionary<string, IExporter> map) 
+        => _map = map;
+    public void Export(string type, string data) 
+        => _map[type].Export(data);
+}
